@@ -10,6 +10,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "@daohaus/baal-contracts/contracts/interfaces/IBaal.sol";
+import "@daohaus/baal-contracts/contracts/interfaces/IBaalToken.sol";
+
 // TODO: use on upcoming release
 // import "@daohaus/baal-contracts/contracts/interfaces/IBaalAndVaultSummoner.sol";
 
@@ -19,7 +21,7 @@ import "../interfaces/IBaalAndVaultSummoner.sol";
 
 // import "hardhat/console.sol";
 
-contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+contract FixedLootShamanSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     IBaalAndVaultSummoner public _baalSummoner;
 
     event SetSummoner(address summoner);
@@ -58,9 +60,9 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         address forwarder
     ) external {
         // summon tokens
-        address lootToken = deployToken(initializationLootTokenParams);
+        address lootToken = deployLootToken(initializationLootTokenParams);
 
-        address sharesToken = deployToken(initializationShareTokenParams);
+        address sharesToken = deploySharesToken(initializationShareTokenParams);
 
         (bytes[] memory amendedPostInitActions, IShaman shaman) = deployShaman(
             postInitializationActions,
@@ -79,7 +81,7 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
             ),
             amendedPostInitActions,
             saltNonce, // nonce
-            bytes32(bytes("DHSuperSummoner")), // referrer
+            bytes32(bytes("DHFixedLootShamanSummoner")), // referrer
             "sidecar"
         );
 
@@ -94,23 +96,16 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         // TODO: in some cases transfer ownership will not work
         IBaalFixedToken(lootToken).transferOwnership(address(baal));
         IBaalFixedToken(sharesToken).transferOwnership(address(baal));
-
-
     }
 
     /**
-     * @dev deployToken
+     * @dev deployLootToken
      * @param initializationParams The parameters for deploying the token
      */
-    function deployToken(
-        bytes calldata initializationParams
-    ) internal returns (address token) {
+    function deployLootToken(bytes calldata initializationParams) internal returns (address token) {
         // todo: support bring your own token
         // maybe if initPrams is empty, then use template as token
-        (address template, bytes memory initParams) = abi.decode(
-            initializationParams,
-            (address, bytes)
-        );
+        (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
 
         (string memory name, string memory symbol, uint256 initialSupply) = abi.decode(
             initParams,
@@ -121,13 +116,27 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         token = address(
             new ERC1967Proxy(
                 template,
-                abi.encodeWithSelector(
-                    IBaalFixedToken(template).setUp.selector,
-                    name,
-                    symbol,
-                    initialSupply
-                )
+                abi.encodeWithSelector(IBaalFixedToken(template).setUp.selector, name, symbol, initialSupply)
             )
+        );
+
+        emit DeployBaalToken(token);
+    }
+
+    /**
+     * @dev deploySharesToken
+     * @param initializationParams The parameters for deploying the token
+     */
+    function deploySharesToken(bytes calldata initializationParams) internal returns (address token) {
+        // todo: support bring your own token
+        // maybe if initPrams is empty, then use template as token
+        (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
+
+        (string memory name, string memory symbol) = abi.decode(initParams, (string, string));
+
+        // ERC1967 could be upgradable
+        token = address(
+            new ERC1967Proxy(template, abi.encodeWithSelector(IBaalToken(template).setUp.selector, name, symbol))
         );
 
         emit DeployBaalToken(token);
@@ -139,10 +148,7 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     ) internal returns (bytes[] memory amendedPostInitActions, IShaman shaman) {
         // summon shaman
         // (address template, uint256 permissions, bytes memory initParams)
-        (address shamanTemplate, uint256 perm, ) = abi.decode(
-            initializationShamanParams,
-            (address, uint256, bytes)
-        );
+        (address shamanTemplate, uint256 perm, ) = abi.decode(initializationShamanParams, (address, uint256, bytes));
         // Clones because it should not need to be upgradable
         shaman = IShaman(payable(Clones.clone(shamanTemplate)));
 
@@ -172,14 +178,9 @@ contract SuperSummoner is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         address vault,
         bytes memory initializationShamanParams
     ) internal {
-        (, , bytes memory initShamanParams) = abi.decode(
-            initializationShamanParams,
-            (address, uint256, bytes)
-        );
+        (, , bytes memory initShamanParams) = abi.decode(initializationShamanParams, (address, uint256, bytes));
         IShaman(shaman).setup(baal, vault, initShamanParams);
     }
 
-    function _authorizeUpgrade(
-        address newImplementation
-    ) internal override onlyOwner {}
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

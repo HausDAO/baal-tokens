@@ -5,10 +5,10 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, network } = hre;
   const { deployer } = await hre.getNamedAccounts();
 
-  console.log('\n\Deploying SimpleEthOnboarderShaman mock on network:', network.name);
+  console.log("\nDeploying SimpleEthOnboarderShaman mock on network:", network.name);
 
-  const shamanDeployed = await deployments.deploy('SimpleEthOnboarderShaman', {
-    contract: 'SimpleEthOnboarderShaman',
+  const shamanDeployed = await deployments.deploy("SimpleEthOnboarderShaman", {
+    contract: "SimpleEthOnboarderShaman",
     from: deployer,
     args: [],
     // proxy: {
@@ -17,9 +17,9 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     // },
     log: true,
   });
-  console.log('SimpleEthOnboarderShaman deployment Tx ->', shamanDeployed.transactionHash);
+  console.log("SimpleEthOnboarderShaman deployment Tx ->", shamanDeployed.transactionHash);
 };
 
 export default deployFn;
-deployFn.id = "000_deploy_Mocks"; // id required to prevent reexecution
-deployFn.tags = ["Mocks"];
+deployFn.id = "000_deploy_Mocks_Onboarder"; // id required to prevent reexecution
+deployFn.tags = ["MocksOnboarder"];

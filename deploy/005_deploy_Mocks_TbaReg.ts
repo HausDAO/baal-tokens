@@ -5,10 +5,10 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, network } = hre;
   const { deployer } = await hre.getNamedAccounts();
 
-  console.log("\nDeploying FixedLoot singleton on network:", network.name);
+  console.log("\nDeploying ERC6551Reg mock on network:", network.name);
 
-  const fixedLootDeployed = await deployments.deploy("FixedLoot", {
-    contract: "FixedLoot",
+  const shamanDeployed = await deployments.deploy("ERC6551Registry", {
+    contract: "ERC6551Registry",
     from: deployer,
     args: [],
     // proxy: {
@@ -17,9 +17,9 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     // },
     log: true,
   });
-  console.log("FixedLoot deployment Tx ->", fixedLootDeployed.transactionHash);
+  console.log("ERC6551Registry deployment Tx ->", shamanDeployed.transactionHash);
 };
 
 export default deployFn;
-deployFn.id = "002_deploy_FixedLoot"; // id required to prevent reexecution
-deployFn.tags = ["Factories", "FixedLoot"];
+deployFn.id = "004_deploy_Mocks_TbaReg"; // id required to prevent reexecution
+deployFn.tags = ["MocksTbaReg"];

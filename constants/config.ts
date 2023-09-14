@@ -1,13 +1,13 @@
-
 type Contracts = {
   baalSummoner: string;
   bvSummoner: string;
   btSummoner: string;
+  shares: string;
 };
 
 type Ownable = {
   owner: string;
-}
+};
 
 export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
   "1": {
@@ -15,6 +15,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "0x7e988A9db2F8597735fc68D21060Daed948a3e8C",
     bvSummoner: "0x594E630efbe8dbd810c168e3878817a4094bB312",
     btSummoner: "0x8a4A9E36106Ee290811B89e06e2faFE913507965",
+    shares: "0x8124Cbb807A7b64123F3dEc3EF64995d8B10d3Eb",
     owner: "",
   },
   "100": {
@@ -22,6 +23,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "0x7e988A9db2F8597735fc68D21060Daed948a3e8C",
     bvSummoner: "0x594E630efbe8dbd810c168e3878817a4094bB312",
     btSummoner: "0x8a4A9E36106Ee290811B89e06e2faFE913507965",
+    shares: "0x8124Cbb807A7b64123F3dEc3EF64995d8B10d3Eb",
     owner: "",
   },
   "137": {
@@ -29,6 +31,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "0x7e988A9db2F8597735fc68D21060Daed948a3e8C",
     bvSummoner: "0x594E630efbe8dbd810c168e3878817a4094bB312",
     btSummoner: "0x8a4A9E36106Ee290811B89e06e2faFE913507965",
+    shares: "0x8124Cbb807A7b64123F3dEc3EF64995d8B10d3Eb",
     owner: "",
   },
   "42161": {
@@ -36,6 +39,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "0xb08Cc8C343cF6dC20d8cf51Fb2D6C436c6390dAa",
     bvSummoner: "0xC39E8D4DE75c6aC025a0C07dCd8Aeb0728C5DBF1",
     btSummoner: "0x8a4A9E36106Ee290811B89e06e2faFE913507965",
+    shares: "0x8124Cbb807A7b64123F3dEc3EF64995d8B10d3Eb",
     owner: "",
   },
   "10": {
@@ -43,6 +47,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "0x3E0eAdE343Ddc556a6Cf0f858e4f685ba303ce71",
     bvSummoner: "0xb04111e7b4576164145EF97EB81fd43DA0F2D675",
     btSummoner: "0x84561C97156a128662B62952890469214FDC87bf",
+    shares: "0x8124Cbb807A7b64123F3dEc3EF64995d8B10d3Eb",
     owner: "",
   },
   "5": {
@@ -50,6 +55,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "0x7e988A9db2F8597735fc68D21060Daed948a3e8C",
     bvSummoner: "0x594E630efbe8dbd810c168e3878817a4094bB312",
     btSummoner: "0xb0c5c96c3d21c1d58B98a5366dF0Af7AfcD94F95",
+    shares: "0x8124Cbb807A7b64123F3dEc3EF64995d8B10d3Eb",
     owner: "",
   },
   "80001": {
@@ -57,6 +63,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "",
     bvSummoner: "",
     btSummoner: "",
+    shares: "",
     owner: "",
   },
   "420": {
@@ -64,6 +71,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "",
     bvSummoner: "",
     btSummoner: "",
+    shares: "",
     owner: "",
   },
   "421613": {
@@ -71,6 +79,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     baalSummoner: "",
     bvSummoner: "",
     btSummoner: "",
+    shares: "",
     owner: "",
   },
 };
