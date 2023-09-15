@@ -19,10 +19,12 @@ export function shouldSummonASuperBaal(): void {
     expect(sharesSupply).to.equal(safeBalance);
   });
 
-  it("Should have minted all loot to sidecar safe", async function () {
+  it("Should have minted all loot to sidecar safe and claim shaman", async function () {
     const lootSupply = await (this.loot as FixedLoot).totalSupply();
     const safeBalance = await (this.loot as FixedLoot).balanceOf(this.sidecarVaultAddress);
-    expect(lootSupply).to.equal(safeBalance);
+    const shamanBalance = await (this.loot as FixedLoot).balanceOf(this.shaman.address);
+
+    expect(lootSupply).to.equal(safeBalance.add(shamanBalance));
   });
 
   it("NFT TBA Should be able to claim", async function () {

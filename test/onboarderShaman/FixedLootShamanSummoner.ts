@@ -31,8 +31,7 @@ describe("FixedLootShamanSummoner", function () {
             "SimpleEthOnboarderShaman",
             deployer,
           )) as SimpleEthOnboarderShaman;
-          const { baalSingleton, poster, config, adminConfig, safeAddress, forwarderAddress, saltNonceOverride } =
-            params;
+          const { baalSingleton, poster, config, adminConfig } = params;
           const newBaalAddresses = await summonBaal({
             summoner: fixedLootShamanSummoner,
             baalSingleton,
@@ -40,9 +39,6 @@ describe("FixedLootShamanSummoner", function () {
             config,
             adminConfig,
             shamans: undefined,
-            safeAddress,
-            forwarderAddress,
-            saltNonceOverride,
             lootConfig: {
               name: "Fixed Loot",
               symbol: "FLOOT",

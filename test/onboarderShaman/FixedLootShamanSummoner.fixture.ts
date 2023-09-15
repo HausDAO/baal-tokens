@@ -120,11 +120,8 @@ type NewBaalConfig = {
   config: DAOSettings;
   adminConfig: [boolean, boolean];
   shamans?: [string[], number[]];
-  safeAddress?: `0x${string}`;
-  forwarderAddress?: `0x${string}`;
   lootAddress?: `0x${string}`;
   sharesAddress?: `0x${string}`;
-  saltNonceOverride?: string;
   lootConfig: TokenSetup;
   sharesConfig: TokenSetup;
   shamanConfig: ShamanConfig;
@@ -140,11 +137,7 @@ export const summonBaal = async ({
   shamanConfig,
   sharesConfig,
   lootConfig,
-  safeAddress = ethers.constants.AddressZero,
-  forwarderAddress = ethers.constants.AddressZero,
-  saltNonceOverride,
 }: NewBaalConfig) => {
-  const saltNonce = saltNonceOverride || (Math.random() * 1000).toFixed(0);
   const postInitializationActions = await encodeBaalInitAction(baalSingleton, poster, config, adminConfig, shamans);
 
   const lootParams = abiCoder.encode(
@@ -178,9 +171,6 @@ export const summonBaal = async ({
     initializationShareTokenParams,
     initializationShamanParams,
     postInitializationActions,
-    saltNonce,
-    safeAddress,
-    forwarderAddress,
   );
   const newBaalAddresses = await getNewBaalAddresses(tx);
   return newBaalAddresses;

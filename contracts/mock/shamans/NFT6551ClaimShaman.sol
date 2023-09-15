@@ -12,8 +12,8 @@ import "../../interfaces/IERC6551Account.sol";
 error NotVault();
 error AlreadyClaimed();
 error Insolvent();
-error TooEarly();
-error TooLate();
+error Paused();
+error NotPaused();
 
 contract NFT6551ClaimerShaman is Initializable {
     IBaal public baal;
@@ -23,8 +23,7 @@ contract NFT6551ClaimerShaman is Initializable {
     IERC6551Account public tbaImp;
     IERC721 public nft;
 
-    uint256 public expiry;
-    uint256 public start;
+    bool public paused;
 
     mapping(uint256 => uint256) public claims;
 
@@ -39,26 +38,24 @@ contract NFT6551ClaimerShaman is Initializable {
     ) external initializer {
         baal = IBaal(_moloch);
         vault = _vault;
-        (
-            address _nftAddress,
-            address _registry,
-            address _tbaImp,
-            uint256 _perNft,
-            uint256 _expiry,
-            uint256 _start
-        ) = abi.decode(_initParams, (address, address, address, uint256, uint256, uint256));
+        (address _nftAddress, address _registry, address _tbaImp, uint256 _perNft) = abi.decode(
+            _initParams,
+            (address, address, address, uint256)
+        );
         nft = IERC721(_nftAddress);
         registry = IERC6551Registry(_registry);
         tbaImp = IERC6551Account(payable(_tbaImp));
         perNft = _perNft;
-        expiry = _expiry;
-        start = _start;
-        // IERC20(baal.lootToken());
     }
 
     modifier onlyVault() {
         if (msg.sender != vault) revert NotVault();
         _;
+    }
+
+    // VIEW FUNCTIONS
+    function isInsolvent() external view returns (bool) {
+        return IERC20(baal.lootToken()).balanceOf(address(this)) < _calculate();
     }
 
     // PRIVATE FUNCTIONS
@@ -84,9 +81,8 @@ contract NFT6551ClaimerShaman is Initializable {
     // PUBLIC FUNCTIONS
 
     function claim(uint256 _tokenId) public {
-        if (block.timestamp < start) revert TooEarly();
-        if (block.timestamp > expiry) revert TooLate();
         if (claims[_tokenId] != 0) revert AlreadyClaimed();
+        if (paused) revert Paused();
 
         claims[_tokenId] = block.timestamp;
 
@@ -95,7 +91,7 @@ contract NFT6551ClaimerShaman is Initializable {
         _mintTokens(msg.sender, 1 ether); // mint 1 share
         bool success = IERC20(baal.lootToken()).transfer(_tba, _amount); // transfer loot to tba
         if (!success) revert Insolvent();
-        emit Claim(msg.sender, _tokenId, block.timestamp, _amount);
+        emit Claim(msg.sender, _tokenId, block.timestamp, _amount); // TODO
     }
 
     function batchClaim(uint256[] memory _tokenIds) external {
@@ -106,16 +102,12 @@ contract NFT6551ClaimerShaman is Initializable {
 
     // ADMIN FUNCTIONS
 
-    function extend(uint256 _expiry) external onlyVault {
-        if (_expiry < expiry) revert TooEarly();
-        expiry = _expiry;
-    }
-
     function clawback() external onlyVault {
-        if (expiry > block.timestamp) revert TooEarly();
+        if (!paused) revert NotPaused();
         IERC20(baal.lootToken()).transfer(vault, IERC20(baal.lootToken()).balanceOf(address(this)));
     }
 
-    // End Early (needed?)
-    // Disable (can be done by DAO disablling the shaman)
+    function togglePauseClaim() external onlyVault {
+        paused = !!paused;
+    }
 }

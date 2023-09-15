@@ -35,6 +35,7 @@ describe.only("ClaimSummoner", function () {
             "FixedLootShamanSummoner",
           )) as FixedLootShamanSummoner;
           const fixedTokenSingletonAddress = (await ethers.getContract("FixedLoot")).address;
+          console.log(">>>>fixedTokenSingletonAddress", fixedTokenSingletonAddress);
           const sharesTokenSingletonAddress = (await ethers.getContract("Shares")).address;
           console.log(">>>>sharesTokenSingletonAddress", sharesTokenSingletonAddress);
           const mockShamanSingleton = (await ethers.getContract(
@@ -43,8 +44,7 @@ describe.only("ClaimSummoner", function () {
           )) as NFT6551ClaimerShaman;
           console.log(">>>mockShamanSingleton", mockShamanSingleton.address);
 
-          const { baalSingleton, poster, config, adminConfig, safeAddress, forwarderAddress, saltNonceOverride } =
-            params;
+          const { baalSingleton, poster, config, adminConfig } = params;
 
           const { nft, ERC6551Reg } = await setUpNftand6551();
 
@@ -58,19 +58,19 @@ describe.only("ClaimSummoner", function () {
             config,
             adminConfig,
             shamans: undefined,
-            safeAddress,
-            forwarderAddress,
-            saltNonceOverride,
             lootConfig: {
               name: "Fixed Loot",
               symbol: "FLOOT",
-              supply: ethers.utils.parseEther("1000000"),
+              initialHolders: [], //
+              initialAmounts: [
+                ethers.utils.parseEther("200000").toString(), // vault
+                ethers.utils.parseEther("100000").toString(), // shaman
+              ],
               singletonAddress: fixedTokenSingletonAddress,
             },
             sharesConfig: {
               name: "Standard Shares",
               symbol: "SHARES",
-              supply: ethers.utils.parseEther("0"),
               singletonAddress: sharesTokenSingletonAddress,
             },
             shamanConfig: {

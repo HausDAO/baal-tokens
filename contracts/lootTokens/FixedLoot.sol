@@ -7,14 +7,18 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20Pe
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-
 // import "hardhat/console.sol";
 
 error NotSupported();
 error AlreadyMinted();
+error LengthMismatch();
+error AmountsMismatch();
 
 contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableUpgradeable {
-    uint256 public _initialSupply;
+    uint256[] private _initialAmounts;
+    address[] private _initialHolders;
+
+    bool public _mintingLocked;
 
     constructor() {
         _disableInitializers();
@@ -22,18 +26,32 @@ contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableU
 
     /// @notice Configure loot - called by Baal on summon
     /// @dev initializer should prevent this from being called again
-    /// @param name_ Name for ERC20 token trackers
-    /// @param symbol_ Symbol for ERC20 token trackers
-    function setUp(string memory name_, string memory symbol_, uint256 initialSupply) external initializer {
+    /// @param params setup params
+    function setUp(bytes calldata params) external initializer {
+        (
+            string memory name_,
+            string memory symbol_,
+            address[] memory initialHolders,
+            uint256[] memory initialAmounts
+        ) = abi.decode(params, (string, string, address[], uint256[]));
+
+        // the first 2 amounts in the array are reserved for the vault and the claim shaman
+        // and are requiered
+        if (initialAmounts.length < 2) {
+            revert AmountsMismatch();
+        }
+        if (initialHolders.length != initialAmounts.length - 2) {
+            revert LengthMismatch();
+        }
         require(bytes(name_).length != 0, "loot: name empty");
         require(bytes(symbol_).length != 0, "loot: symbol empty");
+        _initialHolders = initialHolders;
+        _initialAmounts = initialAmounts;
 
         __ERC20_init(name_, symbol_);
         __ERC20Permit_init(name_);
         __ERC20Snapshot_init();
         __Ownable_init();
-
-        _initialSupply = initialSupply;
     }
 
     /// @notice Allows baal to create a snapshot
@@ -68,10 +86,18 @@ contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableU
         revert NotSupported();
     }
 
-    function initialMint(address initialHolder) external onlyOwner {
-        // TODO should only happen dureing init by factory
-        if (totalSupply() > 0) revert AlreadyMinted();
-        _mint(initialHolder, _initialSupply);
+    function initialMint(address vault, address claimShaman) external onlyOwner {
+        if (_mintingLocked) {
+            revert AlreadyMinted();
+        }
+
+        _mintingLocked = true;
+        _mint(vault, _initialAmounts[0]);
+        _mint(claimShaman, _initialAmounts[1]);
+
+        for (uint256 i = 0; i < _initialHolders.length; i++) {
+            _mint(_initialHolders[i], _initialAmounts[i + 2]);
+        }
     }
 
     /// @notice Baal-only function to burn loot.

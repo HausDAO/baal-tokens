@@ -14,10 +14,17 @@ import { ERC6551Registry, FixedLootShamanSummoner, MintableNFT } from "../../typ
 
 export const abiCoder = ethers.utils.defaultAbiCoder;
 
-export type TokenSetup = {
+export type LootTokenSetup = {
   name: string;
   symbol: string;
-  supply: BigNumberish;
+  initialHolders: string[];
+  initialAmounts: BigNumberish[];
+  singletonAddress: string;
+};
+
+export type SharesTokenSetup = {
+  name: string;
+  symbol: string;
   singletonAddress: string;
 };
 
@@ -40,15 +47,12 @@ export const encodeMockClaimShamanParams = function (nftAddress: string, registr
   // address _registry,
   // address _tbaImp,
   // uint256 _perNft,
-  // uint256 _expiry,
-  // uint256 _start
 
   const perNft = 100;
-  const expiry = (Date.parse("01 Jan 3000") / 1000).toFixed(0);
-  const start = (Date.parse("01 Jan 2000") / 1000).toFixed(0);
+
   const shamanParams = abiCoder.encode(
-    ["address", "address", "address", "uint256", "uint256", "uint256"],
-    [nftAddress, registry, tbaImp, perNft, expiry, start],
+    ["address", "address", "address", "uint256"],
+    [nftAddress, registry, tbaImp, perNft],
   );
   return shamanParams;
 };
@@ -134,13 +138,10 @@ type NewBaalConfig = {
   config: DAOSettings;
   adminConfig: [boolean, boolean];
   shamans?: [string[], number[]];
-  safeAddress?: `0x${string}`;
-  forwarderAddress?: `0x${string}`;
   lootAddress?: `0x${string}`;
   sharesAddress?: `0x${string}`;
-  saltNonceOverride?: string;
-  lootConfig: TokenSetup;
-  sharesConfig: TokenSetup;
+  lootConfig: LootTokenSetup;
+  sharesConfig: SharesTokenSetup;
   shamanConfig: ShamanConfig;
 };
 
@@ -161,17 +162,14 @@ export const summonBaal = async ({
   shamanConfig,
   sharesConfig,
   lootConfig,
-  safeAddress = ethers.constants.AddressZero,
-  forwarderAddress = ethers.constants.AddressZero,
-  saltNonceOverride,
 }: NewBaalConfig) => {
-  const saltNonce = saltNonceOverride || (Math.random() * 1000).toFixed(0);
   const postInitializationActions = await encodeBaalInitAction(baalSingleton, poster, config, adminConfig, shamans);
 
   const lootParams = abiCoder.encode(
-    ["string", "string", "uint256"],
-    [lootConfig.name, lootConfig.symbol, lootConfig.supply],
+    ["string", "string", "address[]", "uint256[]"],
+    [lootConfig.name, lootConfig.symbol, lootConfig.initialHolders, lootConfig.initialAmounts],
   );
+  console.log(">>>", [lootConfig.name, lootConfig.symbol, lootConfig.initialHolders, lootConfig.initialAmounts]);
   const initializationLootTokenParams = abiCoder.encode(
     ["address", "bytes"],
     [lootConfig.singletonAddress, lootParams],
@@ -191,9 +189,6 @@ export const summonBaal = async ({
     initializationShareTokenParams,
     initializationShamanParams,
     postInitializationActions,
-    saltNonce,
-    safeAddress,
-    forwarderAddress,
   );
   const newBaalAddresses = await getNewBaalAddresses(tx);
   return newBaalAddresses;

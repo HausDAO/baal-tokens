@@ -54,10 +54,7 @@ contract FixedLootShamanSummoner is Initializable, OwnableUpgradeable, UUPSUpgra
         bytes calldata initializationLootTokenParams,
         bytes calldata initializationShareTokenParams,
         bytes calldata initializationShamanParams,
-        bytes[] memory postInitializationActions,
-        uint256 saltNonce,
-        address safeAddr,
-        address forwarder
+        bytes[] memory postInitializationActions
     ) external {
         // summon tokens
         address lootToken = deployLootToken(initializationLootTokenParams);
@@ -74,28 +71,40 @@ contract FixedLootShamanSummoner is Initializable, OwnableUpgradeable, UUPSUpgra
             abi.encode(
                 IBaalFixedToken(sharesToken).name(),
                 IBaalFixedToken(sharesToken).symbol(),
-                safeAddr,
-                forwarder, // forwarder
+                address(0), // safe (0 addr creates a new one)
+                address(0), // forwarder (0 addr disables feature)
                 lootToken,
                 sharesToken
             ),
             amendedPostInitActions,
-            saltNonce, // nonce
+            0, // salt nonce
             bytes32(bytes("DHFixedLootShamanSummoner")), // referrer
             "sidecar"
         );
 
+        postDeployActions(initializationShamanParams, lootToken, sharesToken, address(shaman), baal, vault);
+    }
+
+    function postDeployActions(
+        bytes calldata initializationShamanParams,
+        address lootToken,
+        address sharesToken,
+        address shaman,
+        address baal,
+        address vault
+    ) internal {
         // init shaman here
         // shaman setup with dao address, vault address and initShamanParams
-        setUpShaman(address(shaman), baal, vault, initializationShamanParams);
+        setUpShaman(shaman, baal, vault, initializationShamanParams);
 
         // mint tokens to vault here
-        IBaalFixedToken(lootToken).initialMint(vault);
+
+        IBaalFixedToken(lootToken).initialMint(vault, shaman);
 
         // change token ownership to baal
         // TODO: in some cases transfer ownership will not work
         IBaalFixedToken(lootToken).transferOwnership(address(baal));
-        IBaalFixedToken(sharesToken).transferOwnership(address(baal));
+        IBaalToken(sharesToken).transferOwnership(address(baal));
     }
 
     /**
@@ -107,17 +116,9 @@ contract FixedLootShamanSummoner is Initializable, OwnableUpgradeable, UUPSUpgra
         // maybe if initPrams is empty, then use template as token
         (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
 
-        (string memory name, string memory symbol, uint256 initialSupply) = abi.decode(
-            initParams,
-            (string, string, uint256)
-        );
-
         // ERC1967 could be upgradable
         token = address(
-            new ERC1967Proxy(
-                template,
-                abi.encodeWithSelector(IBaalFixedToken(template).setUp.selector, name, symbol, initialSupply)
-            )
+            new ERC1967Proxy(template, abi.encodeWithSelector(IBaalFixedToken(template).setUp.selector, initParams))
         );
 
         emit DeployBaalToken(token);

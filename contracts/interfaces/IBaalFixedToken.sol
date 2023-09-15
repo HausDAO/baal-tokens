@@ -5,12 +5,13 @@ pragma solidity ^0.8.19;
 // import "@daohaus/baal-contracts/contracts/interfaces/IBaalToken.sol";
 
 interface IBaalFixedToken {
-    function setUp(string memory name_, string memory symbol_, uint256 initialSupply) external;
-    function initialMint(address initialHolder) external;
+    function setUp(bytes memory initParams) external;
+
+    function initialMint(address vault, address claimShaman) external;
 
     function name() external view returns (string memory);
 
     function symbol() external view returns (string memory);
-    
+
     function transferOwnership(address newOwner) external;
 }
