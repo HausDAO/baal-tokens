@@ -11,6 +11,7 @@ import "../../interfaces/IERC6551Account.sol";
 
 error NotVault();
 error AlreadyClaimed();
+error TokenDoesNotExist();
 error Insolvent();
 error Paused();
 error NotPaused();
@@ -27,7 +28,8 @@ contract NFT6551ClaimerShaman is Initializable {
 
     mapping(uint256 => uint256) public claims;
 
-    uint256 public perNft; // amount of loot or shares to mint
+    uint256 public lootPerNft; // amount of loot to transfer
+    uint256 public sharesPerNft; // amount ofshares to mint
 
     event Claim(address account, uint256 tokenId, uint256 timestamp, uint256 amount);
 
@@ -45,7 +47,8 @@ contract NFT6551ClaimerShaman is Initializable {
         nft = IERC721(_nftAddress);
         registry = IERC6551Registry(_registry);
         tbaImp = IERC6551Account(payable(_tbaImp));
-        perNft = _perNft;
+        lootPerNft = _perNft;
+        sharesPerNft = 1 ether;
     }
 
     modifier onlyVault() {
@@ -75,12 +78,14 @@ contract NFT6551ClaimerShaman is Initializable {
     }
 
     function _calculate() private view returns (uint256 _total) {
-        _total = perNft;
+        _total = lootPerNft;
     }
 
     // PUBLIC FUNCTIONS
 
     function claim(uint256 _tokenId) public {
+        // todo check that tokenId exists
+        nft.ownerOf(_tokenId); // check that tokenId exists
         if (claims[_tokenId] != 0) revert AlreadyClaimed();
         if (paused) revert Paused();
 
@@ -88,7 +93,8 @@ contract NFT6551ClaimerShaman is Initializable {
 
         uint256 _amount = _calculate(); // calculate amount of loot to transfer
         address _tba = _getTBA(_tokenId);
-        _mintTokens(msg.sender, 1 ether); // mint 1 share
+
+        _mintTokens(_tba, 1 ether); // mint 1 share
         bool success = IERC20(baal.lootToken()).transfer(_tba, _amount); // transfer loot to tba
         if (!success) revert Insolvent();
         emit Claim(msg.sender, _tokenId, block.timestamp, _amount); // TODO

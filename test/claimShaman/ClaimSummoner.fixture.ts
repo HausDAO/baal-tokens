@@ -34,12 +34,18 @@ export type ShamanConfig = {
   setupParams: string;
 };
 
+export type NFTConfig = {
+  address: string;
+  permissions: SHAMAN_PERMISSIONS;
+  setupParams: string;
+};
+
 export const setUpNftand6551 = async () => {
   const [s1, s2, s3] = await getUnnamedAccounts();
   const nft = (await ethers.getContract("MintableNFT")) as MintableNFT;
   const ERC6551Reg = (await ethers.getContract("ERC6551Registry")) as ERC6551Registry;
   await mintNfts(nft.address, [s1, s2, s3]);
-  return { nft, ERC6551Reg };
+  return { nft: nft.address, ERC6551Reg: ERC6551Reg.address };
 };
 
 export const encodeMockClaimShamanParams = function (nftAddress: string, registry: string, tbaImp: string) {
@@ -48,7 +54,7 @@ export const encodeMockClaimShamanParams = function (nftAddress: string, registr
   // address _tbaImp,
   // uint256 _perNft,
 
-  const perNft = 100;
+  const perNft = ethers.utils.parseEther("100").toString();
 
   const shamanParams = abiCoder.encode(
     ["address", "address", "address", "uint256"],

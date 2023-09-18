@@ -118,7 +118,6 @@ contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableU
         uint256 amount
     ) internal override(ERC20Upgradeable, ERC20SnapshotUpgradeable) {
         super._beforeTokenTransfer(from, to, amount);
-        // TODO: if using && conditional it fails when calling initialMint
-        require((msg.sender == owner() || to == address(0)) /*Burning by Baal allowed*/, "loot: !transferable");
+        require(!paused(), "loot: !transferable");
     }
 }

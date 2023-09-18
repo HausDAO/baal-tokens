@@ -5,9 +5,9 @@ import {
   baalSetup,
   setupUsersDefault,
 } from "@daohaus/baal-contracts";
-import { ethers, getNamedAccounts } from "hardhat";
+import { ethers, getChainId, getNamedAccounts } from "hardhat";
 
-import { FixedLootShamanSummoner, NFT6551ClaimerShaman } from "../../types";
+import { ERC6551Registry, FixedLootShamanSummoner, MintableNFT, NFT6551ClaimerShaman } from "../../types";
 import { shouldSummonASuperBaal } from "./ClaimSummoner.behavior";
 import { encodeMockClaimShamanParams, setUpNftand6551, summonBaal } from "./ClaimSummoner.fixture";
 
@@ -15,6 +15,8 @@ describe.only("ClaimSummoner", function () {
   describe("Summoner", function () {
     let shamanAddress = "";
     let sidecarVault = "";
+    let nftAddress = "";
+    let erc6551RegAddress = "";
 
     beforeEach(async function () {
       const { deployer } = await getNamedAccounts();
@@ -46,10 +48,12 @@ describe.only("ClaimSummoner", function () {
 
           const { baalSingleton, poster, config, adminConfig } = params;
 
-          const { nft, ERC6551Reg } = await setUpNftand6551();
+          const nftAndReg = await setUpNftand6551();
+          nftAddress = nftAndReg.nft;
+          erc6551RegAddress = nftAndReg.ERC6551Reg;
 
-          console.log(">>>nft", nft.address);
-          console.log(">>>ERC6551Reg", ERC6551Reg.address);
+          console.log(">>>nft", nftAddress);
+          console.log(">>>ERC6551Reg", erc6551RegAddress);
 
           const newBaalAddresses = await summonBaal({
             summoner: fixedLootShamanSummoner,
@@ -75,7 +79,7 @@ describe.only("ClaimSummoner", function () {
             },
             shamanConfig: {
               permissions: SHAMAN_PERMISSIONS.MANAGER,
-              setupParams: encodeMockClaimShamanParams(nft.address, ERC6551Reg.address, ethers.constants.AddressZero),
+              setupParams: encodeMockClaimShamanParams(nftAddress, erc6551RegAddress, ethers.constants.AddressZero),
               singletonAddress: mockShamanSingleton.address,
             },
           });
@@ -96,6 +100,7 @@ describe.only("ClaimSummoner", function () {
       this.multisend = MultiSend;
       this.dai = DAI;
       this.users = signers;
+      this.chainId = await getChainId();
 
       this.shaman = (await ethers.getContractAt(
         "NFT6551ClaimerShaman",
@@ -103,6 +108,8 @@ describe.only("ClaimSummoner", function () {
         deployer,
       )) as NFT6551ClaimerShaman;
       this.sidecarVaultAddress = sidecarVault;
+      this.nft = (await ethers.getContractAt("MintableNFT", nftAddress, deployer)) as MintableNFT;
+      this.registry = (await ethers.getContractAt("ERC6551Registry", erc6551RegAddress, deployer)) as ERC6551Registry;
     });
 
     shouldSummonASuperBaal();
