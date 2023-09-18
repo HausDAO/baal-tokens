@@ -45,7 +45,18 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   console.log("FixedLootShamanSummoner setUp Tx ->", tx.transactionHash);
 
   const owner = addresses?.owner || deployer;
-  if (network.name !== "hardhat" && owner !== deployer) {
+  console.log("FixedLootShamanSummoner transferOwnership to", owner);
+  const txOwnership = await hre.deployments.execute(
+    "FixedLootShamanSummoner",
+    {
+      from: deployer,
+    },
+    "transferOwnership",
+    owner,
+  );
+  console.log("FixedLootShamanSummoner transferOwnership Tx ->", txOwnership.transactionHash);
+
+  if (network.name !== "hardhat" && owner !== deployer && !addresses?.bvSummoner) {
     console.log("BaalAndVaultSummoner transferOwnership to", owner);
     const tx = await deployments.execute(
       "BaalAndVaultSummoner",

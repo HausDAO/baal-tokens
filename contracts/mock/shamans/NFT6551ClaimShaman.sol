@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
 import "@daohaus/baal-contracts/contracts/interfaces/IBaal.sol";
@@ -40,15 +40,15 @@ contract NFT6551ClaimerShaman is Initializable {
     ) external initializer {
         baal = IBaal(_moloch);
         vault = _vault;
-        (address _nftAddress, address _registry, address _tbaImp, uint256 _perNft) = abi.decode(
+        (address _nftAddress, address _registry, address _tbaImp, uint256 _perNft, uint256 _sharesPerNft) = abi.decode(
             _initParams,
-            (address, address, address, uint256)
+            (address, address, address, uint256, uint256)
         );
         nft = IERC721(_nftAddress);
         registry = IERC6551Registry(_registry);
         tbaImp = IERC6551Account(payable(_tbaImp));
         lootPerNft = _perNft;
-        sharesPerNft = 1 ether;
+        sharesPerNft = _sharesPerNft;
     }
 
     modifier onlyVault() {

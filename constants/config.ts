@@ -56,7 +56,7 @@ export const deploymentConfig: { [key: string]: Contracts & Ownable } = {
     bvSummoner: "0x594E630efbe8dbd810c168e3878817a4094bB312",
     btSummoner: "0xb0c5c96c3d21c1d58B98a5366dF0Af7AfcD94F95",
     shares: "0x8124Cbb807A7b64123F3dEc3EF64995d8B10d3Eb",
-    owner: "",
+    owner: "0xCED608Aa29bB92185D9b6340Adcbfa263DAe075b",
   },
   "80001": {
     // mumbai

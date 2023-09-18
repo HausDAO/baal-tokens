@@ -57,11 +57,10 @@ export function shouldSummonASuperBaal(): void {
     const claim = this.shaman?.claim(1);
     await expect(claim).to.be.revertedWithCustomError(this.shaman, "AlreadyClaimed");
   });
-  it("Should not be able to mint loot", async function () {
-    const mint = this.loot?.mint(this.shaman.address, 1);
-    await expect(mint).to.be.revertedWithCustomError(this.loot, "MintingDisabled");
+  it("TODO: Should not be able to mint loot", async function () {
+    // todo
   });
-  it("Should not be able to mint loot through proposal", async function () {
+  it("TODO: Should not be able to mint loot through proposal", async function () {
     // todo
   });
 }

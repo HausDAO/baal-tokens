@@ -55,10 +55,11 @@ export const encodeMockClaimShamanParams = function (nftAddress: string, registr
   // uint256 _perNft,
 
   const perNft = ethers.utils.parseEther("100").toString();
+  const sharesPerNft = ethers.utils.parseEther("1").toString();
 
   const shamanParams = abiCoder.encode(
-    ["address", "address", "address", "uint256"],
-    [nftAddress, registry, tbaImp, perNft],
+    ["address", "address", "address", "uint256", "uint256"],
+    [nftAddress, registry, tbaImp, perNft, sharesPerNft],
   );
   return shamanParams;
 };

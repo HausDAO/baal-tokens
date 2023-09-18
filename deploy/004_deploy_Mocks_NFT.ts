@@ -1,9 +1,13 @@
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
+import { deploymentConfig } from "../constants";
+
 const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-  const { deployments, network } = hre;
+  const { getChainId, deployments, network } = hre;
   const { deployer } = await hre.getNamedAccounts();
+  const chainId = await getChainId();
+  const addresses = deploymentConfig[chainId];
 
   console.log("\nDeploying MintableNFT mock on network:", network.name);
 
@@ -18,6 +22,18 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     log: true,
   });
   console.log("MintableNFT deployment Tx ->", shamanDeployed.transactionHash);
+
+  const owner = addresses?.owner || deployer;
+  console.log("MintableNFT transferOwnership to", owner);
+  const txOwnership = await hre.deployments.execute(
+    "MintableNFT",
+    {
+      from: deployer,
+    },
+    "transferOwnership",
+    owner,
+  );
+  console.log("MintableNFT transferOwnership Tx ->", txOwnership.transactionHash);
 };
 
 export default deployFn;
