@@ -18,27 +18,12 @@ import "../interfaces/IBaalFixedToken.sol";
 
 // import "hardhat/console.sol";
 
-contract FixedLootShamanSummoner is HOSBase {
+contract OnboarderShamanSummoner is HOSBase {
     function setUp(address baalSummoner) public override onlyOwner {
         // baalAndVaultSummoner
         require(baalSummoner != address(0), "zero address");
         _baalSummoner = IBaalAndVaultSummoner(baalSummoner); //vault summoner
         super.setUp(baalSummoner);
-    }
-
-    /**
-     * @dev deployLootToken
-     * @param initializationParams The parameters for deploying the token
-     */
-    function deployLootToken(bytes calldata initializationParams) internal override returns (address token) {
-        (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
-
-        // ERC1967 could be upgradable
-        token = address(
-            new ERC1967Proxy(template, abi.encodeWithSelector(IBaalFixedToken(template).setUp.selector, initParams))
-        );
-
-        emit DeployBaalToken(token);
     }
 
     function setUpShaman(
@@ -62,9 +47,7 @@ contract FixedLootShamanSummoner is HOSBase {
         // init shaman here
         // shaman setup with dao address, vault address and initShamanParams
         setUpShaman(shaman, baal, vault, initializationShamanParams);
-        // mint initial tokens to vault here
-        // todo: can this be cleaned up?
-        IBaalFixedToken(lootToken).initialMint(vault, shaman);
+
         super.postDeployActions(initializationShamanParams, lootToken, sharesToken, shaman, baal, vault);
     }
 }

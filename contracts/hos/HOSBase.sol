@@ -35,12 +35,11 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     /**
      * @dev Sets the address of the BaalSummoner contract (vault summoner hos)
-     * @param baalAndVaultSummoner The address of the BaalSummoner contract
+     * @param baalSummoner The address of the BaalSummoner contract
      */
-    function setUp(address baalAndVaultSummoner) public onlyOwner {
-        require(baalAndVaultSummoner != address(0), "zero address");
-        _baalSummoner = IBaalAndVaultSummoner(baalAndVaultSummoner); //vault summoner
-        emit SetSummoner(baalAndVaultSummoner);
+    function setUp(address baalSummoner) public virtual onlyOwner {
+        // another hos in override
+        emit SetSummoner(baalSummoner);
     }
 
     /**
@@ -67,7 +66,18 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         );
 
         // summon baal with new tokens
-        (address baal, address vault) = _baalSummoner.summonBaalAndVault(
+        (address baal, address vault) = summon(amendedPostInitActions, lootToken, sharesToken);
+
+        postDeployActions(initializationShamanParams, lootToken, sharesToken, address(shaman), baal, vault);
+    }
+
+    // TODO: Summon virtual function that could use other summoners
+    function summon(
+        bytes[] memory postInitActions,
+        address lootToken,
+        address sharesToken
+    ) internal virtual returns (address baal, address vault) {
+        (baal, vault) = _baalSummoner.summonBaalAndVault(
             abi.encode(
                 IBaalFixedToken(sharesToken).name(),
                 IBaalFixedToken(sharesToken).symbol(),
@@ -76,13 +86,11 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
                 lootToken,
                 sharesToken
             ),
-            amendedPostInitActions,
+            postInitActions,
             0, // salt nonce
             bytes32(bytes("DHFixedLootShamanSummoner")), // referrer
             "sidecar"
         );
-
-        postDeployActions(initializationShamanParams, lootToken, sharesToken, address(shaman), baal, vault);
     }
 
     function postDeployActions(
@@ -93,14 +101,6 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         address baal,
         address vault
     ) internal virtual {
-        // init shaman here
-        // shaman setup with dao address, vault address and initShamanParams
-        setUpShaman(shaman, baal, vault, initializationShamanParams);
-
-        // mint initial tokens to vault here
-        // todo: can this be cleaned up?
-        IBaalFixedToken(lootToken).initialMint(vault, shaman);
-
         // change token ownership to baal
         // TODO: in some cases transfer ownership will not work
         IBaalToken(lootToken).transferOwnership(address(baal));
@@ -166,16 +166,6 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
             shamans,
             permissions
         );
-    }
-
-    function setUpShaman(
-        address shaman,
-        address baal,
-        address vault,
-        bytes memory initializationShamanParams
-    ) internal {
-        (, , bytes memory initShamanParams) = abi.decode(initializationShamanParams, (address, uint256, bytes));
-        IShaman(shaman).setup(baal, vault, initShamanParams);
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
