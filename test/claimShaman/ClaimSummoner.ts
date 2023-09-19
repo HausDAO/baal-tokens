@@ -1,10 +1,7 @@
 import {
-  Baal,
-  Loot,
   NewBaalParams,
   SHAMAN_PERMISSIONS,
   SetupUsersParams,
-  Shares,
   baalSetup,
   setupUsersDefault,
 } from "@daohaus/baal-contracts";
@@ -105,17 +102,7 @@ describe("ClaimSummoner", function () {
       this.shares = Shares;
       this.multisend = MultiSend;
       this.dai = DAI;
-      this.users = {
-        ...signers,
-        ...{
-          shaman: {
-            address: shamanAddress,
-            baal: (await ethers.getContractAt("Baal", Baal.address, shamanAddress)) as Baal,
-            loot: (await ethers.getContractAt("Loot", Loot.address, shamanAddress)) as Loot,
-            shares: (await ethers.getContractAt("Shares", Shares.address, shamanAddress)) as Shares,
-          },
-        },
-      };
+      this.users = signers;
       this.chainId = await getChainId();
       this.fixedLoot = (await ethers.getContractAt("FixedLoot", this.loot.address, deployer)) as FixedLoot;
 

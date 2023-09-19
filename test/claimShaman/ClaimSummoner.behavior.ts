@@ -70,13 +70,8 @@ export function shouldSummonASuperBaal(): void {
     // todo: as owner
   });
   it.only("Should not be able to mint loot as shaman", async function () {
-    const lootSupplyBefore = await (this.loot as FixedLoot).totalSupply();
-    console.log("lootSupplyBefore", lootSupplyBefore.toString());
-
-    const shamanMint = this.users.shaman.baal.mintLoot([this.shaman.address], ["10000000000000000000"]);
+    const shamanMint = this.baal.connect(this.shaman).mintLoot([this.shaman.address], ["10000000000000000000"]);
     await expect(shamanMint).to.be.revertedWith("Ownable: caller is not the owner");
-    const lootSupplyAfter = await (this.loot as FixedLoot).totalSupply();
-    console.log("lootSupplyAfter", lootSupplyAfter.toString());
   });
   it("should be initialized", async function () {
     const init = this.summoner?.initialize(ethers.constants.AddressZero);
