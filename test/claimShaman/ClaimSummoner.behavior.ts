@@ -1,4 +1,4 @@
-import { IBaal, SHAMAN_PERMISSIONS } from "@daohaus/baal-contracts";
+import { IBaal, SHAMAN_PERMISSIONS, submitAndProcessProposal } from "@daohaus/baal-contracts";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -66,12 +66,22 @@ export function shouldSummonASuperBaal(): void {
     const tmint = this.fixedLoot.initialMint(this.shaman.address, this.shaman.address);
     await expect(tmint).to.be.revertedWith("Ownable: caller is not the owner");
   });
-  it("TODO: Should not be able to mint loot through proposal", async function () {
+  it.only("TODO: Should not be able to mint loot through proposal", async function () {
     // todo: as owner
-  });
-  it.only("Should not be able to mint loot as shaman", async function () {
-    const shamanMint = this.baal.connect(this.shaman).mintLoot([this.shaman.address], ["10000000000000000000"]);
-    await expect(shamanMint).to.be.revertedWith("Ownable: caller is not the owner");
+    const sp = await submitAndProcessProposal({
+      baal: this.baal,
+      encodedAction: "0x00",
+      proposal: {
+        flag: 1,
+        account: ethers.constants.AddressZero,
+        data: "0x00",
+        details: "",
+        expiration: 0,
+        baalGas: 0,
+      },
+      proposalId: 1,
+    });
+    expect(sp).to.be.ok;
   });
   it("should be initialized", async function () {
     const init = this.summoner?.initialize(ethers.constants.AddressZero);

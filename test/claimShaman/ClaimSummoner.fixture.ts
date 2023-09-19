@@ -48,6 +48,24 @@ export const setUpNftand6551 = async () => {
   return { nft: nft.address, ERC6551Reg: ERC6551Reg.address };
 };
 
+// export const submitAndProcessProposal = async ({
+//   baal,
+//   encodedAction,
+//   proposal,
+//   proposalId,
+// }: {
+//   baal: Baal;
+//   encodedAction: string;
+//   proposal: ProposalType;
+//   proposalId?: BigNumberish;
+// }) => {
+//   await baal.submitProposal(encodedAction, proposal.expiration, proposal.baalGas, ethers.utils.id(proposal.details));
+//   const id = proposalId ? proposalId : await baal.proposalCount();
+//   await baal.submitVote(id, true);
+//   await moveForwardPeriods(defaultDAOSettings.VOTING_PERIOD_IN_SECONDS, 2);
+//   return await baal.processProposal(id, encodedAction);
+// };
+
 export const encodeMockClaimShamanParams = function (nftAddress: string, registry: string, tbaImp: string) {
   // address _nftAddress,
   // address _registry,
