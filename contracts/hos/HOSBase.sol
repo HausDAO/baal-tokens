@@ -81,7 +81,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     ) internal virtual returns (address baal, address vault) {}
 
     function postDeployActions(
-        bytes calldata initializationShamanParams,
+        bytes calldata initializationLootTokenParams,
         address lootToken,
         address sharesToken,
         address shaman,
@@ -90,6 +90,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     ) internal virtual {
         // change token ownership to baal
         // TODO: in some cases transfer ownership will not work
+
         IBaalToken(lootToken).transferOwnership(address(baal));
         IBaalToken(sharesToken).transferOwnership(address(baal));
     }

@@ -47,8 +47,6 @@ export const encodeBaalInitAction = async function (
   config: DAOSettings,
   adminConfig: [boolean, boolean],
   shamans?: [string[], number[]],
-  shares?: [string[], BigNumberish[]],
-  loot?: [string[], BigNumberish[]],
 ) {
   const governanceConfig = abiCoder.encode(
     ["uint32", "uint32", "uint256", "uint256", "uint256", "uint256"],
@@ -63,15 +61,6 @@ export const encodeBaalInitAction = async function (
   );
 
   const initalizationActions: Array<string> = [];
-
-  // console.log("????shares", shares || [[], []]);
-  // console.log("????loot", loot || [[], []]);
-  // todo: mint shares and mint loot fails in baal setup
-  // const mintShares = baal.interface.encodeFunctionData("mintShares", shares || [[], []]);
-  // initalizationActions.push(mintShares);
-  // const mintLoot = baal.interface.encodeFunctionData("mintLoot", loot || [[], []]);
-  // initalizationActions.push(mintLoot);
-  // console.log("????mintLoot", mintLoot);
 
   const setAdminConfig = baal.interface.encodeFunctionData("setAdminConfig", adminConfig);
   initalizationActions.push(setAdminConfig);
@@ -151,15 +140,7 @@ export const summonBaal = async ({
   sharesConfig,
   lootConfig,
 }: NewBaalConfig) => {
-  const postInitializationActions = await encodeBaalInitAction(
-    baalSingleton,
-    poster,
-    config,
-    adminConfig,
-    shamans,
-    [sharesConfig.tos || [], sharesConfig.amounts || []],
-    [lootConfig.tos || [], lootConfig.amounts || []],
-  );
+  const postInitializationActions = await encodeBaalInitAction(baalSingleton, poster, config, adminConfig, shamans);
 
   // const lootParams = abiCoder.encode(
   //   ["string", "string", "uint256"],
@@ -177,8 +158,14 @@ export const summonBaal = async ({
   //   ["address", "bytes"],
   //   [sharesConfig.singletonAddress, sharesParams],
   // );
-  const lootParams = abiCoder.encode(["string", "string"], [lootConfig.name, lootConfig.symbol]);
-  const sharesParams = abiCoder.encode(["string", "string"], [sharesConfig.name, sharesConfig.symbol]);
+  const lootParams = abiCoder.encode(
+    ["string", "string", "string[]", "uint256[]"],
+    [lootConfig.name, lootConfig.symbol, lootConfig.tos || [], lootConfig.amounts || []],
+  );
+  const sharesParams = abiCoder.encode(
+    ["string", "string", "string[]", "uint256[]"],
+    [sharesConfig.name, sharesConfig.symbol, sharesConfig.tos || [], sharesConfig.amounts || []],
+  );
 
   const initializationLootTokenParams = abiCoder.encode(
     ["address", "bytes"],

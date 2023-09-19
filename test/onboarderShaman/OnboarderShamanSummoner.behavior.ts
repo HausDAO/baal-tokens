@@ -25,6 +25,9 @@ export function shouldSummonASuperBaal(): void {
   });
 
   it("Should mint shares", async function () {
+    const sharesSupply = await (this.shares as IBaalToken).totalSupply();
+    console.log("T shares supply", sharesSupply.toString());
+
     const s1Balance = await (this.shares as IBaalToken).balanceOf(this.unnamedUsers[0]);
     expect(s1Balance).to.equal(this.amounts[0]);
   });

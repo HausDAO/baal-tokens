@@ -62,6 +62,46 @@ contract OnboarderShamanSummoner is HOSBase {
         IShaman(shaman).setup(baal, vault, initShamanParams);
     }
 
+    function deployLootToken(bytes calldata initializationParams) internal override returns (address token) {
+        (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
+
+        (string memory name, string memory symbol, address[] memory tos, uint256[] memory amounts) = abi.decode(
+            initParams,
+            (string, string, address[], uint256[])
+        );
+
+        // ERC1967 could be upgradable
+        token = address(
+            new ERC1967Proxy(template, abi.encodeWithSelector(IBaalToken(template).setUp.selector, name, symbol))
+        );
+
+        for (uint256 i = 0; i < tos.length; i++) {
+            IBaalToken(token).mint(tos[i], amounts[i]);
+        }
+
+        emit DeployBaalToken(token);
+    }
+
+    function deploySharesToken(bytes calldata initializationParams) internal override returns (address token) {
+        (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
+
+        (string memory name, string memory symbol, address[] memory tos, uint256[] memory amounts) = abi.decode(
+            initParams,
+            (string, string, address[], uint256[])
+        );
+
+        // ERC1967 could be upgradable
+        token = address(
+            new ERC1967Proxy(template, abi.encodeWithSelector(IBaalToken(template).setUp.selector, name, symbol))
+        );
+
+        for (uint256 i = 0; i < tos.length; i++) {
+            IBaalToken(token).mint(tos[i], amounts[i]);
+        }
+
+        emit DeployBaalToken(token);
+    }
+
     function postDeployActions(
         bytes calldata initializationShamanParams,
         address lootToken,
