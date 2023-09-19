@@ -28,18 +28,13 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     event DeployBaalToken(address tokenAddress);
 
-    function initialize() public initializer {
-        __Ownable_init();
-        __UUPSUpgradeable_init();
+    constructor() {
+        _disableInitializers();
     }
 
-    /**
-     * @dev Sets the address of the BaalSummoner contract (vault summoner hos)
-     * @param baalSummoner The address of the BaalSummoner contract
-     */
-    function setUp(address baalSummoner) public virtual onlyOwner {
-        // lower hos in override
-        emit SetSummoner(baalSummoner);
+    function initialize(address baalSummoner) public virtual initializer {
+        __Ownable_init();
+        __UUPSUpgradeable_init();
     }
 
     /**
@@ -88,7 +83,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     /**
      * @dev postDeployActions by default tokens are transfered to baal
-     * @param initializationLootTokenParams The parameters for deploying the token
+     * @param initializationShamanParams The parameters for deploying the token
      * @param lootToken The address of the loot token
      * @param sharesToken The address of the shares token
      * @param shaman The address of the shaman
@@ -96,7 +91,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
      * @param vault The address of the vault
      */
     function postDeployActions(
-        bytes calldata initializationLootTokenParams,
+        bytes calldata initializationShamanParams,
         address lootToken,
         address sharesToken,
         address shaman,

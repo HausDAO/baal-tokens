@@ -1,5 +1,6 @@
 import { IBaal, IBaalToken, SHAMAN_PERMISSIONS } from "@daohaus/baal-contracts";
 import { expect } from "chai";
+import { ethers } from "hardhat";
 
 export function shouldSummonASuperBaal(): void {
   it("Should have a manager shaman", async function () {
@@ -34,5 +35,10 @@ export function shouldSummonASuperBaal(): void {
   it("Should mint loot", async function () {
     const l1Balance = await (this.loot as IBaalToken).balanceOf(this.unnamedUsers[0]);
     expect(l1Balance).to.equal(this.amounts[0]);
+  });
+
+  it("should be initialized", async function () {
+    const init = this.summoner?.initialize(ethers.constants.AddressZero);
+    await expect(init).to.be.revertedWith("Initializable: contract is already initialized");
   });
 }

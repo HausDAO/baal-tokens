@@ -1,5 +1,6 @@
 import { IBaal, SHAMAN_PERMISSIONS } from "@daohaus/baal-contracts";
 import { expect } from "chai";
+import { ethers } from "hardhat";
 
 import { FixedLoot, IERC20 } from "../../types";
 
@@ -57,10 +58,28 @@ export function shouldSummonASuperBaal(): void {
     const claim = this.shaman?.claim(1);
     await expect(claim).to.be.revertedWithCustomError(this.shaman, "AlreadyClaimed");
   });
-  it("TODO: Should not be able to mint loot", async function () {
-    // todo
+  it("Should not be able to mint loot", async function () {
+    const tmint = this.loot.mint(this.shaman.address, 1);
+    await expect(tmint).to.be.revertedWith("Ownable: caller is not the owner");
+  });
+  it("Should not be able to mint initial loot", async function () {
+    const tmint = this.fixedLoot.initialMint(this.shaman.address, this.shaman.address);
+    await expect(tmint).to.be.revertedWith("Ownable: caller is not the owner");
   });
   it("TODO: Should not be able to mint loot through proposal", async function () {
-    // todo
+    // todo: as owner
+  });
+  it.only("Should not be able to mint loot as shaman", async function () {
+    const lootSupplyBefore = await (this.loot as FixedLoot).totalSupply();
+    console.log("lootSupplyBefore", lootSupplyBefore.toString());
+
+    const shamanMint = this.users.shaman.baal.mintLoot([this.shaman.address], ["10000000000000000000"]);
+    await expect(shamanMint).to.be.revertedWith("Ownable: caller is not the owner");
+    const lootSupplyAfter = await (this.loot as FixedLoot).totalSupply();
+    console.log("lootSupplyAfter", lootSupplyAfter.toString());
+  });
+  it("should be initialized", async function () {
+    const init = this.summoner?.initialize(ethers.constants.AddressZero);
+    await expect(init).to.be.revertedWith("Initializable: contract is already initialized");
   });
 }

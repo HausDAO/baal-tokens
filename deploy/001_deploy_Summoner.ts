@@ -28,21 +28,14 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     args: [],
     proxy: {
       proxyContract: "UUPS",
-      methodName: "initialize",
+      execute: {
+        methodName: "initialize",
+        args: [bvSummonerAddress],
+      },
     },
     log: true,
   });
   console.log("FixedLootShamanSummoner deployment Tx ->", hosSummonerDeployed.transactionHash);
-
-  const tx = await hre.deployments.execute(
-    "FixedLootShamanSummoner",
-    {
-      from: deployer,
-    },
-    "setUp",
-    bvSummonerAddress,
-  );
-  console.log("FixedLootShamanSummoner setUp Tx ->", tx.transactionHash);
 
   const owner = addresses?.owner || deployer;
   console.log("FixedLootShamanSummoner transferOwnership to", owner);

@@ -14,6 +14,7 @@ import { encodeMockOnboarderShamanParams, summonBaal } from "./OnboarderShamanSu
 describe("OnboarderShamanSummoner", function () {
   describe("Summoner", function () {
     let shamanAddress = "";
+    let summoner: OnboarderShamanSummoner;
 
     beforeEach(async function () {
       const { deployer } = await getNamedAccounts();
@@ -67,6 +68,7 @@ describe("OnboarderShamanSummoner", function () {
             },
           });
           shamanAddress = newBaalAddresses.shaman;
+          summoner = onboarderShamanSummoner;
           return newBaalAddresses;
         },
         setupUsersOverride: async (params: SetupUsersParams) => {
@@ -78,6 +80,7 @@ describe("OnboarderShamanSummoner", function () {
       this.baal = Baal;
       this.loot = Loot;
       this.shares = Shares;
+      this.summoner = summoner;
 
       this.multisend = MultiSend;
       this.dai = DAI;

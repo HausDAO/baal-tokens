@@ -21,12 +21,14 @@ import "../interfaces/IBaalFixedToken.sol";
 contract FixedLootShamanSummoner is HOSBase {
     IBaalAndVaultSummoner public _baalSummoner;
 
-    function setUp(address baalSummoner) public override onlyOwner {
+    function initialize(address baalSummoner) public override {
+        super.initialize(baalSummoner);
+        // standard baalSummoner
         // baalAndVaultSummoner
         require(baalSummoner != address(0), "zero address");
         _baalSummonerAddress = baalSummoner;
         _baalSummoner = IBaalAndVaultSummoner(baalSummoner); //vault summoner
-        super.setUp(baalSummoner);
+        emit SetSummoner(baalSummoner);
     }
 
     /**

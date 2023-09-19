@@ -28,22 +28,14 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     args: [],
     proxy: {
       proxyContract: "UUPS",
-      methodName: "initialize",
+      execute: {
+        methodName: "initialize",
+        args: [summonerAddress],
+      },
     },
     log: true,
   });
   console.log("OnboarderShamanSummoner deployment Tx ->", hosSummonerDeployed.transactionHash);
-
-  // TODO setAddrs?
-  const tx = await hre.deployments.execute(
-    "OnboarderShamanSummoner",
-    {
-      from: deployer,
-    },
-    "setUp",
-    summonerAddress,
-  );
-  console.log("OnboarderShamanSummoner setUp Tx ->", tx.transactionHash);
 
   const owner = addresses?.owner || deployer;
   console.log("OnboarderShamanSummoner transferOwnership to", owner);
