@@ -1,3 +1,17 @@
+# baal-tokens
+
+Playground to experiment with different token and shaman configurations
+
+It uses a HOS (Higher Order Summoner) that wraps our indexed summoners from the baal repo
+
+Initial tests are configured and examples of using the base summoner or the baal and vault summoner.
+
+ClaimShaman: summoner is an example of deploying a baal, side vault, a custom token (Fixed loot), and a claim shaman
+that allows NFT holders to claim shares/loot to a ERC6551 tba
+
+OnboarderShaman: summoner is an example of using the base sumoner and deploying a standard lott/shares token with a
+example of a simple onboarding shaman (eth to shares or loot)
+
 # Hardhat Template [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Hardhat][hardhat-badge]][hardhat] [![License: MIT][license-badge]][license]
 
 [gitpod]: https://gitpod.io/#https://github.com/paulrberg/hardhat-template
