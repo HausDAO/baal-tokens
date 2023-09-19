@@ -29,6 +29,9 @@ describe.only("OnboarderShamanSummoner", function () {
           )) as OnboarderShamanSummoner;
           const lootTokenSingletonAddress = (await ethers.getContract("Loot")).address;
           const sharesTokenSingletonAddress = (await ethers.getContract("Shares")).address;
+          console.log("lootTokenSingletonAddress", lootTokenSingletonAddress);
+          console.log("sharesTokenSingletonAddress", sharesTokenSingletonAddress);
+
           const mockShamanSingleton = (await ethers.getContract(
             "SimpleEthOnboarderShaman",
             deployer,

@@ -196,6 +196,7 @@ export const summonBaal = async ({
     initializationShareTokenParams,
     initializationShamanParams,
     postInitializationActions,
+    101,
   );
   const newBaalAddresses = await getNewBaalAddresses(tx);
   return newBaalAddresses;

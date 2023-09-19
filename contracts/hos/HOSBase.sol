@@ -53,7 +53,8 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         bytes calldata initializationLootTokenParams,
         bytes calldata initializationShareTokenParams,
         bytes calldata initializationShamanParams,
-        bytes[] memory postInitializationActions
+        bytes[] memory postInitializationActions,
+        uint256 saltNonce
     ) external virtual {
         // summon tokens
         address lootToken = deployLootToken(initializationLootTokenParams);
@@ -66,7 +67,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         );
 
         // summon baal with new tokens
-        (address baal, address vault) = summon(amendedPostInitActions, lootToken, sharesToken);
+        (address baal, address vault) = summon(amendedPostInitActions, lootToken, sharesToken, saltNonce);
 
         postDeployActions(initializationShamanParams, lootToken, sharesToken, address(shaman), baal, vault);
     }
@@ -75,7 +76,8 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     function summon(
         bytes[] memory postInitActions,
         address lootToken,
-        address sharesToken
+        address sharesToken,
+        uint256 saltNounce
     ) internal virtual returns (address baal, address vault) {}
 
     function postDeployActions(

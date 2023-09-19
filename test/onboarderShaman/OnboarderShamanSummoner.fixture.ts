@@ -64,13 +64,14 @@ export const encodeBaalInitAction = async function (
 
   const initalizationActions: Array<string> = [];
 
-  console.log("????shares", shares || [[], []]);
-  console.log("????loot", loot || [[], []]);
+  // console.log("????shares", shares || [[], []]);
+  // console.log("????loot", loot || [[], []]);
   // todo: mint shares and mint loot fails in baal setup
-  const mintShares = baal.interface.encodeFunctionData("mintShares", shares || [[], []]);
-  initalizationActions.push(mintShares);
-  const mintLoot = baal.interface.encodeFunctionData("mintLoot", loot || [[], []]);
-  initalizationActions.push(mintLoot);
+  // const mintShares = baal.interface.encodeFunctionData("mintShares", shares || [[], []]);
+  // initalizationActions.push(mintShares);
+  // const mintLoot = baal.interface.encodeFunctionData("mintLoot", loot || [[], []]);
+  // initalizationActions.push(mintLoot);
+  // console.log("????mintLoot", mintLoot);
 
   const setAdminConfig = baal.interface.encodeFunctionData("setAdminConfig", adminConfig);
   initalizationActions.push(setAdminConfig);
@@ -197,6 +198,7 @@ export const summonBaal = async ({
     initializationShareTokenParams,
     initializationShamanParams,
     postInitializationActions,
+    101,
   );
   const newBaalAddresses = await getNewBaalAddresses(tx);
   return newBaalAddresses;

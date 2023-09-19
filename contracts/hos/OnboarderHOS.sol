@@ -33,7 +33,8 @@ contract OnboarderShamanSummoner is HOSBase {
     function summon(
         bytes[] memory postInitActions,
         address lootToken,
-        address sharesToken
+        address sharesToken,
+        uint256 saltNonce
     ) internal override returns (address baal, address vault) {
         vault = address(0);
         baal = _baalSummoner.summonBaalFromReferrer(
@@ -46,8 +47,8 @@ contract OnboarderShamanSummoner is HOSBase {
                 sharesToken
             ),
             postInitActions,
-            0, // salt nonce
-            bytes32(bytes("DHFixedLootShamanSummoner")) // referrer
+            saltNonce, // salt nonce
+            bytes32(bytes("DHOnboarderShamanSummoner")) // referrer
         );
     }
 

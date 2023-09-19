@@ -32,7 +32,8 @@ contract FixedLootShamanSummoner is HOSBase {
     function summon(
         bytes[] memory postInitActions,
         address lootToken,
-        address sharesToken
+        address sharesToken,
+        uint256 saltNonce
     ) internal override returns (address baal, address vault) {
         (baal, vault) = _baalSummoner.summonBaalAndVault(
             abi.encode(
@@ -44,7 +45,7 @@ contract FixedLootShamanSummoner is HOSBase {
                 sharesToken
             ),
             postInitActions,
-            0, // salt nonce
+            saltNonce, // salt nonce
             bytes32(bytes("DHFixedLootShamanSummoner")), // referrer
             "sidecar"
         );
