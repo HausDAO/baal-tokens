@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "@daohaus/baal-contracts/contracts/interfaces/IBaal.sol";
 import "@daohaus/baal-contracts/contracts/interfaces/IBaalToken.sol";
+import "@daohaus/baal-contracts/contracts/interfaces/IBaalSummoner.sol";
 
 // TODO: use on upcoming release
 // import "@daohaus/baal-contracts/contracts/interfaces/IBaalAndVaultSummoner.sol";
@@ -19,11 +20,35 @@ import "../interfaces/IBaalFixedToken.sol";
 // import "hardhat/console.sol";
 
 contract OnboarderShamanSummoner is HOSBase {
+    IBaalSummoner public _baalSummoner;
+
     function setUp(address baalSummoner) public override onlyOwner {
         // baalAndVaultSummoner
         require(baalSummoner != address(0), "zero address");
-        _baalSummoner = IBaalAndVaultSummoner(baalSummoner); //vault summoner
+        _baalSummonerAddress = baalSummoner;
+        _baalSummoner = IBaalSummoner(baalSummoner); //vault summoner
         super.setUp(baalSummoner);
+    }
+
+    function summon(
+        bytes[] memory postInitActions,
+        address lootToken,
+        address sharesToken
+    ) internal override returns (address baal, address vault) {
+        vault = address(0);
+        baal = _baalSummoner.summonBaalFromReferrer(
+            abi.encode(
+                IBaalFixedToken(sharesToken).name(),
+                IBaalFixedToken(sharesToken).symbol(),
+                address(0), // safe (0 addr creates a new one)
+                address(0), // forwarder (0 addr disables feature)
+                lootToken,
+                sharesToken
+            ),
+            postInitActions,
+            0, // salt nonce
+            bytes32(bytes("DHFixedLootShamanSummoner")) // referrer
+        );
     }
 
     function setUpShaman(

@@ -19,11 +19,35 @@ import "../interfaces/IBaalFixedToken.sol";
 // import "hardhat/console.sol";
 
 contract FixedLootShamanSummoner is HOSBase {
+    IBaalAndVaultSummoner public _baalSummoner;
+
     function setUp(address baalSummoner) public override onlyOwner {
         // baalAndVaultSummoner
         require(baalSummoner != address(0), "zero address");
+        _baalSummonerAddress = baalSummoner;
         _baalSummoner = IBaalAndVaultSummoner(baalSummoner); //vault summoner
         super.setUp(baalSummoner);
+    }
+
+    function summon(
+        bytes[] memory postInitActions,
+        address lootToken,
+        address sharesToken
+    ) internal override returns (address baal, address vault) {
+        (baal, vault) = _baalSummoner.summonBaalAndVault(
+            abi.encode(
+                IBaalFixedToken(sharesToken).name(),
+                IBaalFixedToken(sharesToken).symbol(),
+                address(0), // safe (0 addr creates a new one)
+                address(0), // forwarder (0 addr disables feature)
+                lootToken,
+                sharesToken
+            ),
+            postInitActions,
+            0, // salt nonce
+            bytes32(bytes("DHFixedLootShamanSummoner")), // referrer
+            "sidecar"
+        );
     }
 
     /**

@@ -22,7 +22,7 @@ import "../interfaces/IBaalAndVaultSummoner.sol";
 // import "hardhat/console.sol";
 
 contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
-    IBaalAndVaultSummoner public _baalSummoner;
+    address public _baalSummonerAddress;
 
     event SetSummoner(address summoner);
 
@@ -38,7 +38,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
      * @param baalSummoner The address of the BaalSummoner contract
      */
     function setUp(address baalSummoner) public virtual onlyOwner {
-        // another hos in override
+        // lower hos in override
         emit SetSummoner(baalSummoner);
     }
 
@@ -76,22 +76,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         bytes[] memory postInitActions,
         address lootToken,
         address sharesToken
-    ) internal virtual returns (address baal, address vault) {
-        (baal, vault) = _baalSummoner.summonBaalAndVault(
-            abi.encode(
-                IBaalFixedToken(sharesToken).name(),
-                IBaalFixedToken(sharesToken).symbol(),
-                address(0), // safe (0 addr creates a new one)
-                address(0), // forwarder (0 addr disables feature)
-                lootToken,
-                sharesToken
-            ),
-            postInitActions,
-            0, // salt nonce
-            bytes32(bytes("DHFixedLootShamanSummoner")), // referrer
-            "sidecar"
-        );
-    }
+    ) internal virtual returns (address baal, address vault) {}
 
     function postDeployActions(
         bytes calldata initializationShamanParams,

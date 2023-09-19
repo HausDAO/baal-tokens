@@ -5,27 +5,29 @@ import {
   baalSetup,
   setupUsersDefault,
 } from "@daohaus/baal-contracts";
-import { ethers, getNamedAccounts } from "hardhat";
+import { ethers, getNamedAccounts, getUnnamedAccounts } from "hardhat";
 
-import { FixedLootShamanSummoner, SimpleEthOnboarderShaman } from "../../types";
-import { shouldSummonASuperBaal } from "./FixedLootShamanSummoner.behavior";
-import { encodeMockOnboarderShamanParams, summonBaal } from "./FixedLootShamanSummoner.fixture";
+import { OnboarderShamanSummoner, SimpleEthOnboarderShaman } from "../../types";
+import { shouldSummonASuperBaal } from "./OnboarderShamanSummoner.behavior";
+import { encodeMockOnboarderShamanParams, summonBaal } from "./OnboarderShamanSummoner.fixture";
 
-describe("FixedLootShamanSummoner", function () {
+describe.only("OnboarderShamanSummoner", function () {
   describe("Summoner", function () {
     let shamanAddress = "";
-    let sidecarVault = "";
 
     beforeEach(async function () {
       const { deployer } = await getNamedAccounts();
+      const [s1, s2, s3] = await getUnnamedAccounts();
+      const amounts = [ethers.utils.parseEther("10"), ethers.utils.parseEther("10"), ethers.utils.parseEther("10")];
+
       const { Baal, Loot, Shares, MultiSend, DAI, signers } = await baalSetup({
-        fixtureTags: ["BaalAndVaultSummoner", "FixedLootShamanSummoner", "FixedLoot", "MocksOnboarder"],
+        fixtureTags: ["OnboarderShamanSummoner", "MocksOnboarder"],
         setupBaalOverride: async (params: NewBaalParams) => {
           console.log("OVERRIDE baal setup ******");
-          const fixedLootShamanSummoner = (await ethers.getContract(
-            "FixedLootShamanSummoner",
-          )) as FixedLootShamanSummoner;
-          const fixedTokenSingletonAddress = (await ethers.getContract("FixedLoot")).address;
+          const onboarderShamanSummoner = (await ethers.getContract(
+            "OnboarderShamanSummoner",
+          )) as OnboarderShamanSummoner;
+          const lootTokenSingletonAddress = (await ethers.getContract("Loot")).address;
           const sharesTokenSingletonAddress = (await ethers.getContract("Shares")).address;
           const mockShamanSingleton = (await ethers.getContract(
             "SimpleEthOnboarderShaman",
@@ -33,23 +35,25 @@ describe("FixedLootShamanSummoner", function () {
           )) as SimpleEthOnboarderShaman;
           const { baalSingleton, poster, config, adminConfig } = params;
           const newBaalAddresses = await summonBaal({
-            summoner: fixedLootShamanSummoner,
+            summoner: onboarderShamanSummoner,
             baalSingleton,
             poster,
             config,
             adminConfig,
             shamans: undefined,
             lootConfig: {
-              name: "Fixed Loot",
-              symbol: "FLOOT",
-              supply: ethers.utils.parseEther("1000000"),
-              singletonAddress: fixedTokenSingletonAddress,
+              name: "Standard Loot",
+              symbol: "LOOT",
+              singletonAddress: lootTokenSingletonAddress,
+              tos: [s1, s2, s3],
+              amounts,
             },
             sharesConfig: {
               name: "Standard Shares",
               symbol: "SHARES",
-              supply: ethers.utils.parseEther("0"),
               singletonAddress: sharesTokenSingletonAddress,
+              tos: [s1, s2, s3],
+              amounts,
             },
             shamanConfig: {
               permissions: SHAMAN_PERMISSIONS.MANAGER,
@@ -58,7 +62,6 @@ describe("FixedLootShamanSummoner", function () {
             },
           });
           shamanAddress = newBaalAddresses.shaman;
-          sidecarVault = newBaalAddresses.sidecarVault;
           return newBaalAddresses;
         },
         setupUsersOverride: async (params: SetupUsersParams) => {
@@ -70,15 +73,17 @@ describe("FixedLootShamanSummoner", function () {
       this.baal = Baal;
       this.loot = Loot;
       this.shares = Shares;
+
       this.multisend = MultiSend;
       this.dai = DAI;
       this.users = signers;
+      this.unnamedUsers = [s1, s2, s3];
+      this.amounts = amounts;
       this.shaman = (await ethers.getContractAt(
         "SimpleEthOnboarderShaman",
         shamanAddress,
         deployer,
       )) as SimpleEthOnboarderShaman;
-      this.sidecarVaultAddress = sidecarVault;
     });
 
     shouldSummonASuperBaal();

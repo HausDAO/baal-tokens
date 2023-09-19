@@ -11,7 +11,7 @@ import { ERC6551Registry, FixedLootShamanSummoner, MintableNFT, NFT6551ClaimerSh
 import { shouldSummonASuperBaal } from "./ClaimSummoner.behavior";
 import { encodeMockClaimShamanParams, setUpNftand6551, summonBaal } from "./ClaimSummoner.fixture";
 
-describe.only("ClaimSummoner", function () {
+describe("ClaimSummoner", function () {
   describe("Summoner", function () {
     let shamanAddress = "";
     let sidecarVault = "";
