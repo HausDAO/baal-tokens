@@ -29,6 +29,16 @@ contract FixedLootShamanSummoner is HOSBase {
         super.setUp(baalSummoner);
     }
 
+    /**
+     * @dev summon a new baal contract with a newly created set of loot/shares tokens
+     * uses baal and vault summoner to deploy baal and side vault
+     * @param postInitActions actions ran in baal setup
+     * @param lootToken address
+     * @param sharesToken address
+     * @param saltNonce unique nonce for baal summon
+     * @return baal address
+     * @return vault address
+     */
     function summon(
         bytes[] memory postInitActions,
         address lootToken,
@@ -53,6 +63,7 @@ contract FixedLootShamanSummoner is HOSBase {
 
     /**
      * @dev deployLootToken
+     * loot token is using the FixedLoot Token
      * @param initializationParams The parameters for deploying the token
      */
     function deployLootToken(bytes calldata initializationParams) internal override returns (address token) {
@@ -66,6 +77,15 @@ contract FixedLootShamanSummoner is HOSBase {
         emit DeployBaalToken(token);
     }
 
+    /**
+     * @dev setUpShaman
+     * NFT6551ClaimShaman
+     * init params (address _nftAddress, address _registry, address _tbaImp, uint256 _perNft, uint256 _sharesPerNft)
+     * @param shaman The address of the shaman
+     * @param baal The address of the baal
+     * @param vault The address of the vault
+     * @param initializationShamanParams The parameters for deploying the token
+     */
     function setUpShaman(
         address shaman,
         address baal,
@@ -76,6 +96,16 @@ contract FixedLootShamanSummoner is HOSBase {
         IShaman(shaman).setup(baal, vault, initShamanParams);
     }
 
+    /**
+     * @dev sets up the already deployed claim shaman with init params
+     * shaman init params (address _nftAddress, address _registry, address _tbaImp, uint256 _perNft, uint256 _sharesPerNft)
+     * @param initializationShamanParams shaman init params
+     * @param lootToken address
+     * @param sharesToken address
+     * @param shaman address
+     * @param baal address
+     * @param vault address
+     */
     function postDeployActions(
         bytes calldata initializationShamanParams,
         address lootToken,
@@ -88,7 +118,6 @@ contract FixedLootShamanSummoner is HOSBase {
         // shaman setup with dao address, vault address and initShamanParams
         setUpShaman(shaman, baal, vault, initializationShamanParams);
         // mint initial tokens to vault here
-        // todo: can this be cleaned up?
         IBaalFixedToken(lootToken).initialMint(vault, shaman);
         super.postDeployActions(initializationShamanParams, lootToken, sharesToken, shaman, baal, vault);
     }

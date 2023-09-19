@@ -43,7 +43,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     /**
-     * @dev Summon a new Baal contract with a new set of tokens
+     * @dev Summon a new Baal contract with a new set of tokens, optional vault and shaman
      * @param initializationLootTokenParams The parameters for deploying the token
      * @param initializationShareTokenParams The parameters for deploying the token
      * @param initializationShamanParams  The parameters for deploying the shaman
@@ -56,7 +56,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         bytes[] memory postInitializationActions,
         uint256 saltNonce
     ) external virtual {
-        // summon tokens
+        //
         address lootToken = deployLootToken(initializationLootTokenParams);
 
         address sharesToken = deploySharesToken(initializationShareTokenParams);
@@ -72,7 +72,13 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         postDeployActions(initializationShamanParams, lootToken, sharesToken, address(shaman), baal, vault);
     }
 
-    // TODO: Summon virtual function that could use other summoners
+    /**
+     * @dev Summon a new Baal contract with a new set of tokens
+     * @param postInitActions The actions to be performed after the initialization
+     * @param lootToken The address of the loot token
+     * @param sharesToken The address of the shares token
+     * @param saltNounce The salt nonce for the summon
+     */
     function summon(
         bytes[] memory postInitActions,
         address lootToken,
@@ -80,6 +86,15 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         uint256 saltNounce
     ) internal virtual returns (address baal, address vault) {}
 
+    /**
+     * @dev postDeployActions by default tokens are transfered to baal
+     * @param initializationLootTokenParams The parameters for deploying the token
+     * @param lootToken The address of the loot token
+     * @param sharesToken The address of the shares token
+     * @param shaman The address of the shaman
+     * @param baal The address of the baal
+     * @param vault The address of the vault
+     */
     function postDeployActions(
         bytes calldata initializationLootTokenParams,
         address lootToken,
@@ -89,8 +104,6 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         address vault
     ) internal virtual {
         // change token ownership to baal
-        // TODO: in some cases transfer ownership will not work
-
         IBaalToken(lootToken).transferOwnership(address(baal));
         IBaalToken(sharesToken).transferOwnership(address(baal));
     }
@@ -111,9 +124,11 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         return deployToken(initializationParams);
     }
 
-    function deployToken(bytes calldata initializationParams) private returns (address token) {
-        // todo: support bring your own token
-        // maybe if initPrams is empty, then use template as token
+    /**
+     * @dev deployToken
+     * @param initializationParams The parameters for deploying the token
+     */
+    function deployToken(bytes calldata initializationParams) internal virtual returns (address token) {
         (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
 
         (string memory name, string memory symbol) = abi.decode(initParams, (string, string));
@@ -126,12 +141,19 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         emit DeployBaalToken(token);
     }
 
+    /**
+     * @dev deployShaman
+     * the setShaman action is added to the postInitializationActions
+     * shaman is not fully setup here, only the address is set
+     * @param postInitializationActions The actions to be performed after the initialization
+     * @param initializationShamanParams The parameters for deploying the shaman (address template, uint256 permissions, )
+     *
+     */
     function deployShaman(
         bytes[] memory postInitializationActions,
         bytes memory initializationShamanParams
     ) internal returns (bytes[] memory amendedPostInitActions, IShaman shaman) {
         // summon shaman
-        // (address template, uint256 permissions, bytes memory initParams)
         (address shamanTemplate, uint256 perm, ) = abi.decode(initializationShamanParams, (address, uint256, bytes));
         // Clones because it should not need to be upgradable
         shaman = IShaman(payable(Clones.clone(shamanTemplate)));

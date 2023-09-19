@@ -142,28 +142,12 @@ export const summonBaal = async ({
 }: NewBaalConfig) => {
   const postInitializationActions = await encodeBaalInitAction(baalSingleton, poster, config, adminConfig, shamans);
 
-  // const lootParams = abiCoder.encode(
-  //   ["string", "string", "uint256"],
-  //   [lootConfig.name, lootConfig.symbol, lootConfig.supply],
-  // );
-  // const initializationLootTokenParams = abiCoder.encode(
-  //   ["address", "bytes"],
-  //   [lootConfig.singletonAddress, lootParams],
-  // );
-  // const sharesParams = abiCoder.encode(
-  //   ["string", "string", "uint256"],
-  //   [sharesConfig.name, sharesConfig.symbol, sharesConfig.supply],
-  // );
-  // const initializationShareTokenParams = abiCoder.encode(
-  //   ["address", "bytes"],
-  //   [sharesConfig.singletonAddress, sharesParams],
-  // );
   const lootParams = abiCoder.encode(
-    ["string", "string", "string[]", "uint256[]"],
+    ["string", "string", "address[]", "uint256[]"],
     [lootConfig.name, lootConfig.symbol, lootConfig.tos || [], lootConfig.amounts || []],
   );
   const sharesParams = abiCoder.encode(
-    ["string", "string", "string[]", "uint256[]"],
+    ["string", "string", "address[]", "uint256[]"],
     [sharesConfig.name, sharesConfig.symbol, sharesConfig.tos || [], sharesConfig.amounts || []],
   );
 

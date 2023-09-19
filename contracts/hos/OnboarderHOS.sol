@@ -23,13 +23,23 @@ contract OnboarderShamanSummoner is HOSBase {
     IBaalSummoner public _baalSummoner;
 
     function setUp(address baalSummoner) public override onlyOwner {
-        // baalAndVaultSummoner
+        // standard baalSummoner
         require(baalSummoner != address(0), "zero address");
         _baalSummonerAddress = baalSummoner;
         _baalSummoner = IBaalSummoner(baalSummoner); //vault summoner
         super.setUp(baalSummoner);
     }
 
+    /**
+     * @dev summon a new baal contract with a newly created set of loot/shares tokens
+     * uses base summoner to deploy baal, vault is not created and set to zero.
+     * @param postInitActions actions ran in baal setup
+     * @param lootToken address
+     * @param sharesToken address
+     * @param saltNonce unique nonce for baal summon
+     * @return baal address
+     * @return vault address
+     */
     function summon(
         bytes[] memory postInitActions,
         address lootToken,
@@ -52,6 +62,14 @@ contract OnboarderShamanSummoner is HOSBase {
         );
     }
 
+    /**
+     * @dev internal function to set up the onboarder shaman with last three values in init params
+     * @param shaman address
+     * @param baal address
+     * @param vault address
+     * @param initializationShamanParams [template, [name, symbol, [tos], [amounts]]]
+     *
+     */
     function setUpShaman(
         address shaman,
         address baal,
@@ -62,7 +80,13 @@ contract OnboarderShamanSummoner is HOSBase {
         IShaman(shaman).setup(baal, vault, initShamanParams);
     }
 
-    function deployLootToken(bytes calldata initializationParams) internal override returns (address token) {
+    /**
+     * @dev deploys a new token (loot or shares) using a template and mints to summoners
+     * @param initializationParams [template, [name, symbol, [tos], [amounts]]]
+     * @return token address
+     *
+     */
+    function deployToken(bytes calldata initializationParams) internal override returns (address token) {
         (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
 
         (string memory name, string memory symbol, address[] memory tos, uint256[] memory amounts) = abi.decode(
@@ -82,26 +106,15 @@ contract OnboarderShamanSummoner is HOSBase {
         emit DeployBaalToken(token);
     }
 
-    function deploySharesToken(bytes calldata initializationParams) internal override returns (address token) {
-        (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
-
-        (string memory name, string memory symbol, address[] memory tos, uint256[] memory amounts) = abi.decode(
-            initParams,
-            (string, string, address[], uint256[])
-        );
-
-        // ERC1967 could be upgradable
-        token = address(
-            new ERC1967Proxy(template, abi.encodeWithSelector(IBaalToken(template).setUp.selector, name, symbol))
-        );
-
-        for (uint256 i = 0; i < tos.length; i++) {
-            IBaalToken(token).mint(tos[i], amounts[i]);
-        }
-
-        emit DeployBaalToken(token);
-    }
-
+    /**
+     * @dev setsup the already deployed onboarder shaman with init params
+     * @param initializationShamanParams [shaman, nonce, [uint256 _expiry, uint256 _multiply, uint256 _minTribute, bool _isShares]]
+     * @param lootToken address
+     * @param sharesToken address
+     * @param shaman address
+     * @param baal address
+     * @param vault address or zero address if not used
+     */
     function postDeployActions(
         bytes calldata initializationShamanParams,
         address lootToken,

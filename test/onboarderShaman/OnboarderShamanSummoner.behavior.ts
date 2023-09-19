@@ -10,12 +10,14 @@ export function shouldSummonASuperBaal(): void {
   it("Should have shares and loot", async function () {
     const sharesSymbol = await (this.shares as IBaalToken).symbol();
     const lootSymbol = await (this.loot as IBaalToken).symbol();
-    console.log("T symbols", sharesSymbol, lootSymbol);
+
     const baalShares = await (this.baal as IBaal).sharesToken();
     const baalLoot = await (this.baal as IBaal).lootToken();
-    console.log("T baal shares, loot", baalShares, baalLoot);
 
     expect(sharesSymbol).to.equal("SHARES");
+    expect(lootSymbol).to.equal("LOOT");
+    expect(baalShares).to.equal(this.shares.address);
+    expect(baalLoot).to.equal(this.loot.address);
   });
 
   it("Should have loot,shares ownership with baal", async function () {
@@ -25,22 +27,12 @@ export function shouldSummonASuperBaal(): void {
   });
 
   it("Should mint shares", async function () {
-    const sharesSupply = await (this.shares as IBaalToken).totalSupply();
-    console.log("T shares supply", sharesSupply.toString());
-
     const s1Balance = await (this.shares as IBaalToken).balanceOf(this.unnamedUsers[0]);
     expect(s1Balance).to.equal(this.amounts[0]);
   });
 
-  // it("Should have minted all shares to sidecar safe", async function () {
-  //   const sharesSupply = await (this.shares as IERC20).totalSupply();
-  //   const safeBalance = await (this.shares as IERC20).balanceOf(this.sidecarVaultAddress);
-  //   expect(sharesSupply).to.equal(safeBalance);
-  // });
-
-  // it("Should have minted all loot to sidecar safe", async function () {
-  //   const lootSupply = await (this.loot as FixedLoot).totalSupply();
-  //   const safeBalance = await (this.loot as FixedLoot).balanceOf(this.sidecarVaultAddress);
-  //   expect(lootSupply).to.equal(safeBalance);
-  // });
+  it("Should mint loot", async function () {
+    const l1Balance = await (this.loot as IBaalToken).balanceOf(this.unnamedUsers[0]);
+    expect(l1Balance).to.equal(this.amounts[0]);
+  });
 }

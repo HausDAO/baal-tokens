@@ -11,14 +11,18 @@ import { OnboarderShamanSummoner, SimpleEthOnboarderShaman } from "../../types";
 import { shouldSummonASuperBaal } from "./OnboarderShamanSummoner.behavior";
 import { encodeMockOnboarderShamanParams, summonBaal } from "./OnboarderShamanSummoner.fixture";
 
-describe.only("OnboarderShamanSummoner", function () {
+describe("OnboarderShamanSummoner", function () {
   describe("Summoner", function () {
     let shamanAddress = "";
 
     beforeEach(async function () {
       const { deployer } = await getNamedAccounts();
       const [s1, s2, s3] = await getUnnamedAccounts();
-      const amounts = [ethers.utils.parseEther("10"), ethers.utils.parseEther("10"), ethers.utils.parseEther("10")];
+      const amounts = [
+        ethers.utils.parseEther(".000001"),
+        ethers.utils.parseEther(".000001"),
+        ethers.utils.parseEther(".000001"),
+      ];
 
       const { Baal, Loot, Shares, MultiSend, DAI, signers } = await baalSetup({
         fixtureTags: ["OnboarderShamanSummoner", "MocksOnboarder"],
@@ -29,8 +33,6 @@ describe.only("OnboarderShamanSummoner", function () {
           )) as OnboarderShamanSummoner;
           const lootTokenSingletonAddress = (await ethers.getContract("Loot")).address;
           const sharesTokenSingletonAddress = (await ethers.getContract("Shares")).address;
-          console.log("lootTokenSingletonAddress", lootTokenSingletonAddress);
-          console.log("sharesTokenSingletonAddress", sharesTokenSingletonAddress);
 
           const mockShamanSingleton = (await ethers.getContract(
             "SimpleEthOnboarderShaman",
