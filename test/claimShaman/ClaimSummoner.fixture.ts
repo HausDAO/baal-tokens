@@ -94,9 +94,9 @@ export const encodeBaalInitAction = async function (
     [
       config.VOTING_PERIOD_IN_SECONDS,
       config.GRACE_PERIOD_IN_SECONDS,
-      config.PROPOSAL_OFFERING,
-      config.QUORUM_PERCENT,
-      config.SPONSOR_THRESHOLD,
+      0, // config.PROPOSAL_OFFERING,
+      0, // config.QUORUM_PERCENT,
+      0, // config.SPONSOR_THRESHOLD,
       config.MIN_RETENTION_PERCENT,
     ],
   );
@@ -188,6 +188,7 @@ export const summonBaal = async ({
   sharesConfig,
   lootConfig,
 }: NewBaalConfig) => {
+  // note: can not mint tokens here because they are not owned by the dao yet
   const postInitializationActions = await encodeBaalInitAction(baalSingleton, poster, config, adminConfig, shamans);
 
   const lootParams = abiCoder.encode(

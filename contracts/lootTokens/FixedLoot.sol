@@ -78,7 +78,7 @@ contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableU
         return false;
     }
 
-    /// @notice Baal-only function to mint loot.
+    /// @notice Baal-only function to mint loot. notsupported in fixed loot
     /// @param recipient Address to receive loot
     /// @param amount Amount to mint
     function mint(address recipient, uint256 amount) external view onlyOwner {
@@ -86,6 +86,13 @@ contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableU
         revert NotSupported();
     }
 
+    /// @notice function to mint initial loot.
+    /// can oly be run once then minting is locked going forward
+    /// first 2 amounts in the array are reserved for the vault and the claim shaman
+    /// any furture distributions will be done after that offset
+    /// @dev can only be called once
+    /// @param vault Address to receive vault loot (zero index)
+    /// @param claimShaman Address to receive claim shaman loot (one index)
     function initialMint(address vault, address claimShaman) external onlyOwner {
         if (_mintingLocked) {
             revert AlreadyMinted();

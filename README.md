@@ -1,6 +1,6 @@
 # baal-tokens
 
-Playground to experiment with different token and shaman configurations
+Intent: Playground to experiment with different summoner, token and shaman configurations
 
 It uses a HOS (Higher Order Summoner) that wraps our indexed summoners from the baal repo
 

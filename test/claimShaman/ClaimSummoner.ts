@@ -97,6 +97,7 @@ describe("ClaimSummoner", function () {
       });
 
       this.summoner = summoner;
+      this.deployer = deployer;
       this.baal = Baal;
       this.loot = Loot;
       this.shares = Shares;

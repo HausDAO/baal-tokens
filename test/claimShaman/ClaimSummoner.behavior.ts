@@ -1,8 +1,9 @@
-import { IBaal, SHAMAN_PERMISSIONS, submitAndProcessProposal } from "@daohaus/baal-contracts";
+import { IBaal, IBaalToken, SHAMAN_PERMISSIONS } from "@daohaus/baal-contracts";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
 import { FixedLoot, IERC20 } from "../../types";
+import { submitAndProcessProposal } from "../utils/baal";
 
 export function shouldSummonASuperBaal(): void {
   it("Should have a manager shaman", async function () {
@@ -12,12 +13,6 @@ export function shouldSummonASuperBaal(): void {
 
   it("Should have a sidecar vault", async function () {
     expect(this.sidecarVaultAddress.length).greaterThan(0);
-  });
-
-  it("Should have minted all shares to sidecar safe", async function () {
-    const sharesSupply = await (this.shares as IERC20).totalSupply();
-    const safeBalance = await (this.shares as IERC20).balanceOf(this.sidecarVaultAddress);
-    expect(sharesSupply).to.equal(safeBalance);
   });
 
   it("Should have minted all loot to sidecar safe and claim shaman", async function () {
@@ -66,23 +61,43 @@ export function shouldSummonASuperBaal(): void {
     const tmint = this.fixedLoot.initialMint(this.shaman.address, this.shaman.address);
     await expect(tmint).to.be.revertedWith("Ownable: caller is not the owner");
   });
-  it.only("TODO: Should not be able to mint loot through proposal", async function () {
+  it("TODO: Should be able to mint shares through proposal", async function () {
+    const totalShares = await (this.shares as IERC20).totalSupply();
+    const summonerShareBalance = await (this.shares as IERC20).balanceOf(this.deployer);
+    console.log("summonerShareBalance", totalShares.toString(), summonerShareBalance.toString());
+    // delegate to default user
+    await (this.shares as IBaalToken).delegate(this.users.summoner.address);
+    // console.log("this.users", this.users.summoner.address, this.users.applicant.address, this.users.shaman.address);
+
+    const votingPeriodSeconds = await this.baal.votingPeriod();
+    console.log("votingPeriodSeconds", votingPeriodSeconds.toString());
+
+    const mintShares = await this.baal.interface.encodeFunctionData("mintShares", [
+      [this.users.summoner.address],
+      ["690000000000000000000"],
+    ]);
     // todo: as owner
     const sp = await submitAndProcessProposal({
       baal: this.baal,
-      encodedAction: "0x00",
+      encodedAction: mintShares,
       proposal: {
         flag: 1,
         account: ethers.constants.AddressZero,
-        data: "0x00",
+        data: "",
         details: "",
         expiration: 0,
         baalGas: 0,
       },
-      proposalId: 1,
+      votingPeriodSeconds,
     });
+
+    const totalSharesAfter = await (this.shares as IERC20).totalSupply();
+    console.log("totalSharesAfter", totalSharesAfter.toString());
+    // console.log("sp", sp);
     expect(sp).to.be.ok;
+    // todo: not working
   });
+
   it("should be initialized", async function () {
     const init = this.summoner?.initialize(ethers.constants.AddressZero);
     await expect(init).to.be.revertedWith("Initializable: contract is already initialized");

@@ -59,7 +59,7 @@ contract FixedLootShamanSummoner is HOSBase {
             postInitActions,
             saltNonce, // salt nonce
             bytes32(bytes("DHFixedLootShamanSummoner")), // referrer
-            "sidecar"
+            string.concat(IBaalFixedToken(sharesToken).symbol(), " ", "Vault") // name
         );
     }
 
@@ -121,6 +121,8 @@ contract FixedLootShamanSummoner is HOSBase {
         setUpShaman(shaman, baal, vault, initializationShamanParams);
         // mint initial tokens to vault here
         IBaalFixedToken(lootToken).initialMint(vault, shaman);
+        // todo: remove, mint initial share to summoner for testing
+        IBaalToken(sharesToken).mint(msg.sender, 123 ether);
         super.postDeployActions(initializationShamanParams, lootToken, sharesToken, shaman, baal, vault);
     }
 }
