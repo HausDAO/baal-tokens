@@ -1,5 +1,6 @@
-import { IBaal, IBaalToken, SHAMAN_PERMISSIONS } from "@daohaus/baal-contracts";
+import { IBaal, IBaalToken, SHAMAN_PERMISSIONS, encodeMultiAction } from "@daohaus/baal-contracts";
 import { expect } from "chai";
+import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 
 import { FixedLoot, IERC20 } from "../../types";
@@ -61,25 +62,30 @@ export function shouldSummonASuperBaal(): void {
     const tmint = this.fixedLoot.initialMint(this.shaman.address, this.shaman.address);
     await expect(tmint).to.be.revertedWith("Ownable: caller is not the owner");
   });
-  it("TODO: Should be able to mint shares through proposal", async function () {
+  it("Should be able to mint shares through proposal", async function () {
     const totalShares = await (this.shares as IERC20).totalSupply();
-    const summonerShareBalance = await (this.shares as IERC20).balanceOf(this.deployer);
-    console.log("summonerShareBalance", totalShares.toString(), summonerShareBalance.toString());
+
     // delegate to default user
     await (this.shares as IBaalToken).delegate(this.users.summoner.address);
     // console.log("this.users", this.users.summoner.address, this.users.applicant.address, this.users.shaman.address);
 
     const votingPeriodSeconds = await this.baal.votingPeriod();
-    console.log("votingPeriodSeconds", votingPeriodSeconds.toString());
 
     const mintShares = await this.baal.interface.encodeFunctionData("mintShares", [
       [this.users.summoner.address],
-      ["690000000000000000000"],
+      [ethers.utils.parseEther("69")],
     ]);
-    // todo: as owner
-    const sp = await submitAndProcessProposal({
+    const encodedAction = encodeMultiAction(
+      this.multisend,
+      [mintShares],
+      [this.baal.address],
+      [BigNumber.from(0)],
+      [0],
+    );
+
+    const sp = submitAndProcessProposal({
       baal: this.baal,
-      encodedAction: mintShares,
+      encodedAction: encodedAction,
       proposal: {
         flag: 1,
         account: ethers.constants.AddressZero,
@@ -91,11 +97,72 @@ export function shouldSummonASuperBaal(): void {
       votingPeriodSeconds,
     });
 
+    await expect(sp).to.emit(this.baal, "ProcessProposal").withArgs(1, true, false);
     const totalSharesAfter = await (this.shares as IERC20).totalSupply();
-    console.log("totalSharesAfter", totalSharesAfter.toString());
-    // console.log("sp", sp);
-    expect(sp).to.be.ok;
-    // todo: not working
+    await expect(totalSharesAfter).to.equal(totalShares.add(ethers.utils.parseEther("69")));
+  });
+
+  it("Should not be able to mint loot through proposal", async function () {
+    const totalLoot = await (this.loot as IERC20).totalSupply();
+
+    // delegate to default user
+    await (this.shares as IBaalToken).delegate(this.users.summoner.address);
+    // console.log("this.users", this.users.summoner.address, this.users.applicant.address, this.users.shaman.address);
+
+    const votingPeriodSeconds = await this.baal.votingPeriod();
+
+    const mintLoot = await this.baal.interface.encodeFunctionData("mintLoot", [
+      [this.users.summoner.address],
+      [ethers.utils.parseEther("69")],
+    ]);
+    const encodedAction = encodeMultiAction(this.multisend, [mintLoot], [this.baal.address], [BigNumber.from(0)], [0]);
+
+    const sp = submitAndProcessProposal({
+      baal: this.baal,
+      encodedAction: encodedAction,
+      proposal: {
+        flag: 1,
+        account: ethers.constants.AddressZero,
+        data: "",
+        details: "",
+        expiration: 0,
+        baalGas: 0,
+      },
+      votingPeriodSeconds,
+    });
+
+    await expect(sp).to.emit(this.baal, "ProcessProposal").withArgs(1, true, true); // third true is failed
+    const totalLootAfter = await (this.loot as IERC20).totalSupply();
+    await expect(totalLootAfter).to.equal(totalLoot);
+  });
+
+  it("Should not be able to pause loot through proposal", async function () {
+    // delegate to default user
+    await (this.shares as IBaalToken).delegate(this.users.summoner.address);
+    // console.log("this.users", this.users.summoner.address, this.users.applicant.address, this.users.shaman.address);
+
+    const votingPeriodSeconds = await this.baal.votingPeriod();
+
+    const mintLoot = await this.baal.interface.encodeFunctionData("setAdminConfig", [true, true]);
+    const encodedAction = encodeMultiAction(this.multisend, [mintLoot], [this.baal.address], [BigNumber.from(0)], [0]);
+
+    const sp = submitAndProcessProposal({
+      baal: this.baal,
+      encodedAction: encodedAction,
+      proposal: {
+        flag: 1,
+        account: ethers.constants.AddressZero,
+        data: "",
+        details: "",
+        expiration: 0,
+        baalGas: 0,
+      },
+      votingPeriodSeconds,
+    });
+
+    await expect(sp).to.emit(this.baal, "ProcessProposal").withArgs(1, true, false);
+    const paused = await (this.loot as FixedLoot).paused();
+    expect(paused).to.equal(false);
   });
 
   it("should be initialized", async function () {

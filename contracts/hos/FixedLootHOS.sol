@@ -123,6 +123,8 @@ contract FixedLootShamanSummoner is HOSBase {
         IBaalFixedToken(lootToken).initialMint(vault, shaman);
         // todo: remove, mint initial share to summoner for testing
         IBaalToken(sharesToken).mint(msg.sender, 123 ether);
+        IBaalToken(sharesToken).pause();
+
         super.postDeployActions(initializationShamanParams, lootToken, sharesToken, shaman, baal, vault);
     }
 }
