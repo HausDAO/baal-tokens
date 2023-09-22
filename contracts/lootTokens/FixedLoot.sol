@@ -45,6 +45,9 @@ contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableU
         }
         require(bytes(name_).length != 0, "loot: name empty");
         require(bytes(symbol_).length != 0, "loot: symbol empty");
+        // todo: initial state hash?
+        // pack and hash arrays then pack each hash
+        // on initial mint pass in the values again and compare hashes
         _initialHolders = initialHolders;
         _initialAmounts = initialAmounts;
 

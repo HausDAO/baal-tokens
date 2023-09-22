@@ -94,6 +94,8 @@ contract FixedLootShamanSummoner is HOSBase {
         address vault,
         bytes memory initializationShamanParams
     ) internal {
+        // todo: need explanation and better naming
+        // todo: underscore function name for internal
         (, , bytes memory initShamanParams) = abi.decode(initializationShamanParams, (address, uint256, bytes));
         IShaman(shaman).setup(baal, vault, initShamanParams);
     }

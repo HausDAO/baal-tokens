@@ -66,7 +66,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     function summonBaalFromReferrer(
         bytes calldata initializationLootTokenParams,
         bytes calldata initializationShareTokenParams,
-        bytes calldata initializationShamanParams,
+        bytes calldata initializationShamanParams,  // maybe break out baal init params and shaman init params
         bytes[] memory postInitializationActions,
         uint256 saltNonce
     ) external virtual returns (address) {
@@ -162,10 +162,11 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     /**
      * @dev deployShaman
+     * TODO: internal use underscore
      * the setShaman action is added to the postInitializationActions
      * shaman is not fully setup here, only the address is set
      * @param postInitializationActions The actions to be performed after the initialization
-     * @param initializationShamanParams The parameters for deploying the shaman (address template, uint256 permissions, )
+     * @param initializationShamanParams The parameters for deploying the shaman (address template, uint256 permissions, ) third peram is for poste deploy init
      *
      */
     function deployShaman(
@@ -173,7 +174,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         bytes memory initializationShamanParams
     ) internal returns (bytes[] memory amendedPostInitActions, IShaman shaman) {
         // summon shaman
-        (address shamanTemplate, uint256 perm, ) = abi.decode(initializationShamanParams, (address, uint256, bytes));
+        (address shamanTemplate, uint256 perm) = abi.decode(initializationShamanParams, (address, uint256));
         // Clones because it should not need to be upgradable
         shaman = IShaman(payable(Clones.clone(shamanTemplate)));
 
