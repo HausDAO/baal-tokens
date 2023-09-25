@@ -15,9 +15,6 @@ error LengthMismatch();
 error AmountsMismatch();
 
 contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableUpgradeable {
-    uint256[] private _initialAmounts;
-    address[] private _initialHolders;
-
     bool public _mintingLocked;
 
     constructor() {
@@ -45,8 +42,6 @@ contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableU
         }
         require(bytes(name_).length != 0, "loot: name empty");
         require(bytes(symbol_).length != 0, "loot: symbol empty");
-        _initialHolders = initialHolders;
-        _initialAmounts = initialAmounts;
 
         __ERC20_init(name_, symbol_);
         __ERC20Permit_init(name_);
@@ -93,17 +88,23 @@ contract FixedLoot is ERC20SnapshotUpgradeable, ERC20PermitUpgradeable, OwnableU
     /// @dev can only be called once
     /// @param vault Address to receive vault loot (zero index)
     /// @param claimShaman Address to receive claim shaman loot (one index)
-    function initialMint(address vault, address claimShaman) external onlyOwner {
+    /// @param params setup params
+    function initialMint(address vault, address claimShaman, bytes memory params) external onlyOwner {
         if (_mintingLocked) {
             revert AlreadyMinted();
         }
 
-        _mintingLocked = true;
-        _mint(vault, _initialAmounts[0]);
-        _mint(claimShaman, _initialAmounts[1]);
+        (, , address[] memory initialHolders, uint256[] memory initialAmounts) = abi.decode(
+            params,
+            (string, string, address[], uint256[])
+        );
 
-        for (uint256 i = 0; i < _initialHolders.length; i++) {
-            _mint(_initialHolders[i], _initialAmounts[i + 2]);
+        _mintingLocked = true;
+        _mint(vault, initialAmounts[0]);
+        _mint(claimShaman, initialAmounts[1]);
+
+        for (uint256 i = 0; i < initialHolders.length; i++) {
+            _mint(initialHolders[i], initialAmounts[i + 2]);
         }
     }
 

@@ -62,9 +62,9 @@ describe("OnboarderShamanSummoner", function () {
               amounts,
             },
             shamanConfig: {
-              permissions: SHAMAN_PERMISSIONS.MANAGER,
-              setupParams: encodeMockOnboarderShamanParams(),
-              singletonAddress: mockShamanSingleton.address,
+              permissions: [SHAMAN_PERMISSIONS.MANAGER],
+              setupParams: [encodeMockOnboarderShamanParams()],
+              singletonAddress: [mockShamanSingleton.address],
             },
           });
           shamanAddress = newBaalAddresses.shaman;

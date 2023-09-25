@@ -24,9 +24,9 @@ export type TokenSetup = {
 };
 
 export type ShamanConfig = {
-  singletonAddress: string;
-  permissions: SHAMAN_PERMISSIONS;
-  setupParams: string;
+  singletonAddress: string[];
+  permissions: SHAMAN_PERMISSIONS[];
+  setupParams: string[];
 };
 
 export const encodeMockOnboarderShamanParams = function () {
@@ -160,7 +160,7 @@ export const summonBaal = async ({
     [sharesConfig.singletonAddress, sharesParams],
   );
   const initializationShamanParams = abiCoder.encode(
-    ["address", "uint256", "bytes"],
+    ["address[]", "uint256[]", "bytes[]"],
     [shamanConfig.singletonAddress, shamanConfig.permissions, shamanConfig.setupParams],
   );
 

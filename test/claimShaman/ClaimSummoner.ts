@@ -36,7 +36,7 @@ describe("ClaimSummoner", function () {
 
         setupBaalOverride: async (params: NewBaalParams) => {
           console.log("OVERRIDE baal setup ******");
-          baalVaultSummoner = (await ethers.getContract("BaalAndVaultSummoner") as BaalAndVaultSummoner);
+          baalVaultSummoner = (await ethers.getContract("BaalAndVaultSummoner")) as BaalAndVaultSummoner;
           const fixedLootShamanSummoner = (await ethers.getContract(
             "FixedLootShamanSummoner",
           )) as FixedLootShamanSummoner;
@@ -82,9 +82,9 @@ describe("ClaimSummoner", function () {
               singletonAddress: sharesTokenSingletonAddress,
             },
             shamanConfig: {
-              permissions: SHAMAN_PERMISSIONS.MANAGER,
-              setupParams: encodeMockClaimShamanParams(nftAddress, erc6551RegAddress, ethers.constants.AddressZero),
-              singletonAddress: mockShamanSingleton.address,
+              permissions: [SHAMAN_PERMISSIONS.MANAGER],
+              setupParams: [encodeMockClaimShamanParams(nftAddress, erc6551RegAddress, ethers.constants.AddressZero)],
+              singletonAddress: [mockShamanSingleton.address],
             },
           });
           shamanAddress = newBaalAddresses.shaman;

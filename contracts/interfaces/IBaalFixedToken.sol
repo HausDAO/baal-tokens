@@ -7,7 +7,7 @@ pragma solidity ^0.8.19;
 interface IBaalFixedToken {
     function setUp(bytes memory initParams) external;
 
-    function initialMint(address vault, address claimShaman) external;
+    function initialMint(address vault, address claimShaman, bytes memory initParams) external;
 
     function name() external view returns (string memory);
 

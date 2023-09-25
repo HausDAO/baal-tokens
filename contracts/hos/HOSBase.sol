@@ -75,7 +75,7 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
         address sharesToken = deploySharesToken(initializationShareTokenParams);
 
-        (bytes[] memory amendedPostInitActions, IShaman shaman) = deployShaman(
+        (bytes[] memory amendedPostInitActions, address[] memory shamans) = deployShamans(
             postInitializationActions,
             initializationShamanParams
         );
@@ -86,8 +86,11 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         (address baal, address vault) = summon(amendedPostInitActions, lootToken, sharesToken, saltNonce);
 
         // console.log("baal >>", baal, predictedBaalAddress);
+        // post deploy hooks
+        postDeployShamanActions(initializationShamanParams, lootToken, sharesToken, shamans, baal, vault);
+        postDeployLootActions(initializationLootTokenParams, lootToken, sharesToken, shamans, baal, vault);
+        postDeploySharesActions(initializationShareTokenParams, lootToken, sharesToken, shamans, baal, vault);
 
-        postDeployActions(initializationShamanParams, lootToken, sharesToken, address(shaman), baal, vault);
         return baal;
     }
 
@@ -106,24 +109,44 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     ) internal virtual returns (address baal, address vault) {}
 
     /**
-     * @dev postDeployActions by default tokens are transfered to baal
+     * @dev postDeployShamanActions by default tokens are transfered to baal
      * @param initializationShamanParams The parameters for deploying the token
      * @param lootToken The address of the loot token
      * @param sharesToken The address of the shares token
-     * @param shaman The address of the shaman
+     * @param shamans The address of the shaman
      * @param baal The address of the baal
      * @param vault The address of the vault
      */
-    function postDeployActions(
+    function postDeployShamanActions(
         bytes calldata initializationShamanParams,
         address lootToken,
         address sharesToken,
-        address shaman,
+        address[] memory shamans,
+        address baal,
+        address vault
+    ) internal virtual {}
+
+    function postDeployLootActions(
+        bytes calldata initializationLootParams,
+        address lootToken,
+        address sharesToken,
+        address[] memory shamans,
         address baal,
         address vault
     ) internal virtual {
         // change token ownership to baal
         IBaalToken(lootToken).transferOwnership(address(baal));
+    }
+
+    function postDeploySharesActions(
+        bytes calldata initializationSharesParams,
+        address lootToken,
+        address sharesToken,
+        address[] memory shamans,
+        address baal,
+        address vault
+    ) internal virtual {
+        // change token ownership to baal
         IBaalToken(sharesToken).transferOwnership(address(baal));
     }
 
@@ -148,9 +171,9 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
      * @param initializationParams The parameters for deploying the token
      */
     function deployToken(bytes calldata initializationParams) internal virtual returns (address token) {
-        (address template, bytes memory initParams) = abi.decode(initializationParams, (address, bytes));
+        (address template, bytes memory initDeployParams) = abi.decode(initializationParams, (address, bytes));
 
-        (string memory name, string memory symbol) = abi.decode(initParams, (string, string));
+        (string memory name, string memory symbol) = abi.decode(initDeployParams, (string, string));
 
         // ERC1967 could be upgradable
         token = address(
@@ -161,30 +184,40 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     /**
-     * @dev deployShaman
+     * @dev deployShamans
      * the setShaman action is added to the postInitializationActions
      * shaman is not fully setup here, only the address is set
      * @param postInitializationActions The actions to be performed after the initialization
      * @param initializationShamanParams The parameters for deploying the shaman (address template, uint256 permissions, )
      *
      */
-    function deployShaman(
+    function deployShamans(
         bytes[] memory postInitializationActions,
         bytes memory initializationShamanParams
-    ) internal returns (bytes[] memory amendedPostInitActions, IShaman shaman) {
+    ) internal returns (bytes[] memory, address[] memory) {
         // summon shaman
-        (address shamanTemplate, uint256 perm, ) = abi.decode(initializationShamanParams, (address, uint256, bytes));
-        // Clones because it should not need to be upgradable
-        shaman = IShaman(payable(Clones.clone(shamanTemplate)));
+
+        (address[] memory shamanTemplates, uint256[] memory shamanPermissions, ) = abi.decode(
+            initializationShamanParams,
+            (address[], uint256[], bytes[])
+        );
+        require(shamanTemplates.length == shamanPermissions.length, "HOS: shamanTemplates length mismatch");
 
         uint256 actionsLength = postInitializationActions.length;
-        // amend postInitializationActions to include shaman setup
-        amendedPostInitActions = new bytes[](actionsLength + 1);
-        address[] memory shamans = new address[](1);
-        uint256[] memory permissions = new uint256[](1);
-        // Clones because it should not need to be upgradable
-        shamans[0] = address(shaman);
-        permissions[0] = perm;
+        // amend postInitializationActions to include setShamans
+        bytes[] memory amendedPostInitActions = new bytes[](actionsLength + 1);
+
+        // create arrays to hold shaman template address and permissions
+        address[] memory shamanAddresses = new address[](shamanTemplates.length);
+        uint256[] memory permissions = new uint256[](shamanTemplates.length);
+
+        for (uint256 i = 0; i < shamanTemplates.length; i++) {
+            require(shamanTemplates[i] != address(0), "HOS: shamanTemplates address is zero");
+            // Clones because it should not need to be upgradable
+            IShaman shaman = IShaman(payable(Clones.clone(shamanTemplates[i])));
+            shamanAddresses[i] = address(shaman);
+            permissions[i] = shamanPermissions[i];
+        }
 
         // copy over the rest of the actions
         for (uint256 i = 0; i < actionsLength; i++) {
@@ -192,9 +225,11 @@ contract HOSBase is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         }
         amendedPostInitActions[actionsLength] = abi.encodeWithSignature(
             "setShamans(address[],uint256[])",
-            shamans,
+            shamanAddresses,
             permissions
         );
+
+        return (amendedPostInitActions, shamanAddresses);
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
