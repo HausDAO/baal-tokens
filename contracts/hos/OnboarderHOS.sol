@@ -74,8 +74,11 @@ contract OnboarderShamanSummoner is HOSBase {
         bytes memory initializationShamanParams,
         uint256 index
     ) internal {
-        (, , bytes[] memory initShamanParams) = abi.decode(initializationShamanParams, (address, uint256, bytes[]));
-        IShaman(shaman).setup(baal, vault, initShamanParams[index]);
+        (, , bytes[] memory initShamanDeployParams) = abi.decode(
+            initializationShamanParams,
+            (address, uint256, bytes[])
+        );
+        IShaman(shaman).setup(baal, vault, initShamanDeployParams[index]);
     }
 
     /**

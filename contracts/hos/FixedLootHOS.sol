@@ -96,9 +96,13 @@ contract FixedLootShamanSummoner is HOSBase {
         bytes memory initializationShamanParams,
         uint256 index
     ) internal {
-        // TODO: mismatch length check
-        (, , bytes[] memory initShamanParams) = abi.decode(initializationShamanParams, (address, uint256, bytes[]));
-        IShaman(shaman).setup(baal, vault, initShamanParams[index]);
+        // TODO: mismatch length check, it is not checking the length of initializationShamanParams
+        // against the length of shamans
+        (, , bytes[] memory initShamanDeployParams) = abi.decode(
+            initializationShamanParams,
+            (address, uint256, bytes[])
+        );
+        IShaman(shaman).setup(baal, vault, initShamanDeployParams[index]);
     }
 
     /**
