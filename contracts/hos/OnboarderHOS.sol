@@ -20,7 +20,6 @@ import "../interfaces/IBaalFixedToken.sol";
 // import "hardhat/console.sol";
 
 contract OnboarderShamanSummoner is HOSBase {
-
     function initialize(address _baalSummoner, address _moduleProxyFactory) public override {
         // standard baalSummoner
         super.initialize(_baalSummoner, _moduleProxyFactory);
@@ -72,10 +71,14 @@ contract OnboarderShamanSummoner is HOSBase {
         address shaman,
         address baal,
         address vault,
-        bytes memory initializationShamanParams
+        bytes memory initializationShamanParams,
+        uint256 index
     ) internal {
-        (, , bytes memory initShamanParams) = abi.decode(initializationShamanParams, (address, uint256, bytes));
-        IShaman(shaman).setup(baal, vault, initShamanParams);
+        (, , bytes[] memory initShamanDeployParams) = abi.decode(
+            initializationShamanParams,
+            (address, uint256, bytes[])
+        );
+        IShaman(shaman).setup(baal, vault, initShamanDeployParams[index]);
     }
 
     /**
@@ -109,22 +112,24 @@ contract OnboarderShamanSummoner is HOSBase {
      * @param initializationShamanParams [shaman, nonce, [uint256 _expiry, uint256 _multiply, uint256 _minTribute, bool _isShares]]
      * @param lootToken address
      * @param sharesToken address
-     * @param shaman address
+     * @param shamans address
      * @param baal address
      * @param vault address or zero address if not used
      */
-    function postDeployActions(
+    function postDeployShamanActions(
         bytes calldata initializationShamanParams,
         address lootToken,
         address sharesToken,
-        address shaman,
+        address[] memory shamans,
         address baal,
         address vault
     ) internal override {
         // init shaman here
         // shaman setup with dao address, vault address and initShamanParams
-        setUpShaman(shaman, baal, vault, initializationShamanParams);
+        for (uint256 i = 1; i < shamans.length; i++) {
+            setUpShaman(shamans[i], baal, vault, initializationShamanParams, i);
+        }
 
-        super.postDeployActions(initializationShamanParams, lootToken, sharesToken, shaman, baal, vault);
+        super.postDeployShamanActions(initializationShamanParams, lootToken, sharesToken, shamans, baal, vault);
     }
 }

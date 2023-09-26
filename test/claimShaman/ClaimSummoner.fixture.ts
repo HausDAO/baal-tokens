@@ -29,9 +29,9 @@ export type SharesTokenSetup = {
 };
 
 export type ShamanConfig = {
-  singletonAddress: string;
-  permissions: SHAMAN_PERMISSIONS;
-  setupParams: string;
+  singletonAddress: string[];
+  permissions: SHAMAN_PERMISSIONS[];
+  setupParams: string[];
 };
 
 export type NFTConfig = {
@@ -205,8 +205,9 @@ export const summonBaal = async ({
     ["address", "bytes"],
     [sharesConfig.singletonAddress, sharesParams],
   );
+
   const initializationShamanParams = abiCoder.encode(
-    ["address", "uint256", "bytes"],
+    ["address[]", "uint256[]", "bytes[]"],
     [shamanConfig.singletonAddress, shamanConfig.permissions, shamanConfig.setupParams],
   );
 

@@ -34,6 +34,8 @@ contract NFT6551ClaimerShaman is Initializable {
     uint256 public sharesPerNft; // amount ofshares to mint
 
     event Claim(address account, uint256 tokenId, uint256 timestamp, uint256 amount);
+    event Clawback(address vault, uint256 amount);
+    event PauseClaim(bool paused);
 
     function setup(
         address _moloch, // DAO address
@@ -84,7 +86,6 @@ contract NFT6551ClaimerShaman is Initializable {
     // PUBLIC FUNCTIONS
 
     function claim(uint256 _tokenId) public {
-        // todo check that tokenId exists
         nft.ownerOf(_tokenId); // check that tokenId exists
         if (claims[_tokenId] != 0) revert AlreadyClaimed();
         if (paused) revert Paused();
@@ -111,9 +112,11 @@ contract NFT6551ClaimerShaman is Initializable {
     function clawback() external onlyVault {
         if (!paused) revert NotPaused();
         IERC20(baal.lootToken()).transfer(vault, IERC20(baal.lootToken()).balanceOf(address(this)));
+        emit Clawback(vault, IERC20(baal.lootToken()).balanceOf(address(this)));
     }
 
     function togglePauseClaim() external onlyVault {
         paused = !!paused;
+        emit PauseClaim(paused);
     }
 }

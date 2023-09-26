@@ -87,17 +87,22 @@ contract FixedLootShamanSummoner is HOSBase {
      * @param baal The address of the baal
      * @param vault The address of the vault
      * @param initializationShamanParams The parameters for deploying the token
+     * @param index The index of the shaman
      */
     function setUpShaman(
         address shaman,
         address baal,
         address vault,
-        bytes memory initializationShamanParams
+        bytes memory initializationShamanParams,
+        uint256 index
     ) internal {
-        // todo: need explanation and better naming
-        // todo: underscore function name for internal
-        (, , bytes memory initShamanParams) = abi.decode(initializationShamanParams, (address, uint256, bytes));
-        IShaman(shaman).setup(baal, vault, initShamanParams);
+        // TODO: mismatch length check, it is not checking the length of initializationShamanParams
+        // against the length of shamans
+        (, , bytes[] memory initShamanDeployParams) = abi.decode(
+            initializationShamanParams,
+            (address, uint256, bytes[])
+        );
+        IShaman(shaman).setup(baal, vault, initShamanDeployParams[index]);
     }
 
     /**
@@ -106,27 +111,76 @@ contract FixedLootShamanSummoner is HOSBase {
      * @param initializationShamanParams shaman init params
      * @param lootToken address
      * @param sharesToken address
-     * @param shaman address
+     * @param shamans IShamans
      * @param baal address
      * @param vault address
      */
-    function postDeployActions(
+    function postDeployShamanActions(
         bytes calldata initializationShamanParams,
         address lootToken,
         address sharesToken,
-        address shaman,
+        address[] memory shamans,
         address baal,
         address vault
     ) internal override {
         // init shaman here
         // shaman setup with dao address, vault address and initShamanParams
-        setUpShaman(shaman, baal, vault, initializationShamanParams);
-        // mint initial tokens to vault here
-        IBaalFixedToken(lootToken).initialMint(vault, shaman);
+        for (uint256 i = 0; i < shamans.length; i++) {
+            setUpShaman(shamans[i], baal, vault, initializationShamanParams, i);
+        }
+
+        super.postDeployShamanActions(initializationShamanParams, lootToken, sharesToken, shamans, baal, vault);
+    }
+
+    /**
+     * @dev sets up the already deployed claim shaman with init params
+     * shaman init params (address _nftAddress, address _registry, address _tbaImp, uint256 _perNft, uint256 _sharesPerNft)
+     * @param initializationLootParams shaman init params
+     * @param lootToken address
+     * @param sharesToken address
+     * @param shamans IShamans
+     * @param baal address
+     * @param vault address
+     */
+    function postDeployLootActions(
+        bytes calldata initializationLootParams,
+        address lootToken,
+        address sharesToken,
+        address[] memory shamans,
+        address baal,
+        address vault
+    ) internal override {
+        // init shaman here
+        // shaman setup with dao address, vault address and initShamanParams
+        // first shaman should be the claim contract
+        (, bytes memory initDeployParams) = abi.decode(initializationLootParams, (address, bytes));
+        IBaalFixedToken(lootToken).initialMint(vault, shamans[0], initDeployParams);
+
+        super.postDeployLootActions(initializationLootParams, lootToken, sharesToken, shamans, baal, vault);
+    }
+
+    /**
+     * @dev sets up the already deployed claim shaman with init params
+     * shaman init params (address _nftAddress, address _registry, address _tbaImp, uint256 _perNft, uint256 _sharesPerNft)
+     * @param initializationShareParams shaman init params
+     * @param lootToken address
+     * @param sharesToken address
+     * @param shamans IShamans
+     * @param baal address
+     * @param vault address
+     */
+    function postDeploySharesActions(
+        bytes calldata initializationShareParams,
+        address lootToken,
+        address sharesToken,
+        address[] memory shamans,
+        address baal,
+        address vault
+    ) internal override {
         // todo: remove, mint initial share to summoner for testing
         IBaalToken(sharesToken).mint(msg.sender, 3 ether);
         IBaalToken(sharesToken).pause();
 
-        super.postDeployActions(initializationShamanParams, lootToken, sharesToken, shaman, baal, vault);
+        super.postDeploySharesActions(initializationShareParams, lootToken, sharesToken, shamans, baal, vault);
     }
 }
