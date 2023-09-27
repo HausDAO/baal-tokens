@@ -1,5 +1,6 @@
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { getSetupAddresses } from "@daohaus/baal-contracts";
 
 import { deploymentConfig } from "../constants";
 
@@ -10,7 +11,7 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   console.log("\nDeploying FixedLootShamanSummoner factory on network:", network.name);
 
   const chainId = await getChainId();
-  // const _addresses = await getSetupAddresses(chainId, network, deployments);
+  const setupAddresses = await getSetupAddresses(chainId, network, deployments);
   const addresses = deploymentConfig[chainId];
 
   if (network.name !== "hardhat") {
@@ -21,11 +22,6 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const bvSummonerAddress =
     network.name === "hardhat" ? (await deployments.get("BaalAndVaultSummoner")).address : addresses.bvSummoner;
-  // TODO: this should be retrieved from getSetupAddresses
-  const moduleProxyFactoryAddress = 
-    network.name === "hardhat"
-      ? (await deployments.get("ModuleProxyFactory")).address
-      : "0x00000000000DC7F163742Eb4aBEf650037b1f588";
 
   const hosSummonerDeployed = await deployments.deploy("FixedLootShamanSummoner", {
     contract: "FixedLootShamanSummoner",
@@ -35,7 +31,7 @@ const deployFn: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       proxyContract: "UUPS",
       execute: {
         methodName: "initialize",
-        args: [bvSummonerAddress, moduleProxyFactoryAddress],
+        args: [bvSummonerAddress, setupAddresses.moduleProxyFactory],
       },
     },
     log: true,

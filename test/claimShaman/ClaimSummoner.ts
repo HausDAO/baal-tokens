@@ -1,5 +1,6 @@
 import {
   BaalAndVaultSummoner,
+  defaultDAOSettings,
   NewBaalParams,
   SHAMAN_PERMISSIONS,
   SetupUsersParams,
@@ -24,7 +25,10 @@ describe("ClaimSummoner", function () {
     beforeEach(async function () {
       const { deployer } = await getNamedAccounts();
 
-      const { Baal, Loot, Shares, MultiSend, DAI, signers } = await baalSetup({
+      const { Baal, Loot, Shares, MultiSend, DAI, signers, helpers } = await baalSetup({
+        daoSettings: {
+          ...defaultDAOSettings, // You can override dao settings
+        },
         fixtureTags: [
           "BaalAndVaultSummoner",
           "FixedLootShamanSummoner",
@@ -99,6 +103,7 @@ describe("ClaimSummoner", function () {
         },
       });
 
+      this.helpers = helpers; // helper functions use the same daoSettings used during setup
       this.baalVaultSummoner = baalVaultSummoner;
       this.summoner = summoner;
       this.deployer = deployer;

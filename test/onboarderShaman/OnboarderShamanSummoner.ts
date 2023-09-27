@@ -3,6 +3,7 @@ import {
   SHAMAN_PERMISSIONS,
   SetupUsersParams,
   baalSetup,
+  defaultDAOSettings,
   setupUsersDefault,
 } from "@daohaus/baal-contracts";
 import { ethers, getNamedAccounts, getUnnamedAccounts } from "hardhat";
@@ -25,7 +26,10 @@ describe("OnboarderShamanSummoner", function () {
         ethers.utils.parseEther(".000001"),
       ];
 
-      const { Baal, Loot, Shares, MultiSend, DAI, signers } = await baalSetup({
+      const { Baal, Loot, Shares, MultiSend, DAI, signers, helpers } = await baalSetup({
+        daoSettings: {
+          ...defaultDAOSettings, // You can override dao settings
+        },
         fixtureTags: ["OnboarderShamanSummoner", "MocksOnboarder"],
         setupBaalOverride: async (params: NewBaalParams) => {
           console.log("OVERRIDE baal setup ******");
@@ -77,6 +81,7 @@ describe("OnboarderShamanSummoner", function () {
         },
       });
 
+      this.helpers = helpers; // helper functions use the same daoSettings used during setup
       this.baal = Baal;
       this.loot = Loot;
       this.shares = Shares;
