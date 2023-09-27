@@ -132,6 +132,6 @@ export function shouldHaveCommunityVetoPower(): void {
 
     console.log("ps", ps);
 
-    expect(ps).to.equal([true, false, false, false]);
+    expect(ps).to.eql([true, false, false, false]);
   });
 }
