@@ -10,7 +10,7 @@ import { ethers, getNamedAccounts, getUnnamedAccounts } from "hardhat";
 
 import { CommunityVetoShaman, OnboarderShamanSummoner, SimpleEthOnboarderShaman } from "../../types";
 import { encodeMockOnboarderShamanParams, summonBaal } from "../onboarderShaman/OnboarderShamanSummoner.fixture";
-import { shouldSummonASuperBaal } from "./MultiShamanSummoner.behavior";
+import { shouldHaveCommunityVetoPower, shouldSummonASuperBaal } from "./MultiShamanSummoner.behavior";
 import { encodeMockVetoShamanParams } from "./MultiShamanSummoner.fixture";
 
 // import { encodeMockOnboarderShamanParams, summonBaal } from "./OnboarderShamanSummoner.fixture";
@@ -116,5 +116,6 @@ describe("MultiShamanSummoner", function () {
     });
 
     shouldSummonASuperBaal();
+    shouldHaveCommunityVetoPower();
   });
 });

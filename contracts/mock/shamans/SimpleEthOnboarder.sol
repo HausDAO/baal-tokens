@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 // tribute eth for loot or shares
 contract SimpleEthOnboarderShaman is ReentrancyGuard, Initializable {
@@ -22,8 +22,6 @@ contract SimpleEthOnboarderShaman is ReentrancyGuard, Initializable {
     address vault;
 
     event ObReceived(address indexed contributorAddress, uint256 amount, uint256 isShares, address baal, address vault);
-
-    constructor() initializer {}
 
     function setup(
         address _moloch, // DAO address
@@ -44,6 +42,7 @@ contract SimpleEthOnboarderShaman is ReentrancyGuard, Initializable {
         multiply = _multiply;
         minTribute = _minTribute;
         isShares = _isShares;
+        console.log("SimpleEthOnboarderShaman setup", _expiry, _multiply, _minTribute);
     }
 
     function _mintTokens(address to, uint256 amount) private {

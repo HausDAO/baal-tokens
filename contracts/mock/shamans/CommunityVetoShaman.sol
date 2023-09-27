@@ -5,6 +5,7 @@ import "@daohaus/baal-contracts/contracts/interfaces/IBaal.sol";
 import "@daohaus/baal-contracts/contracts/interfaces/IBaalToken.sol";
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "hardhat/console.sol";
 
 interface IERC20 {
     function transferFrom(address from, address to, uint256 value) external returns (bool);
@@ -45,7 +46,8 @@ contract CommunityVetoShaman is Initializable {
     }
 
     function stakeVeto(uint32 proposalId) public {
-        require(vetoStakesByProposalId[proposalId][msg.sender] > 0, "Already staked");
+        console.log("veto: stakeVeto", vetoStakesByProposalId[proposalId][msg.sender]);
+        require(vetoStakesByProposalId[proposalId][msg.sender] == 0, "Already staked");
 
         uint256 memberStake = IBaalToken(baal.lootToken()).balanceOfAt(msg.sender, proposalSnapshots[proposalId]);
         vetoStakesByProposalId[proposalId][msg.sender] = memberStake;

@@ -17,7 +17,7 @@ import "./HOSBase.sol";
 
 import "../interfaces/IBaalFixedToken.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract OnboarderShamanSummoner is HOSBase {
     function initialize(address _baalSummoner, address _moduleProxyFactory) public override {
@@ -74,6 +74,8 @@ contract OnboarderShamanSummoner is HOSBase {
         bytes memory initializationShamanParams,
         uint256 index
     ) internal {
+        console.log("hos: shaman", shaman);
+        console.log("hos: index", index);
         (, , bytes[] memory initShamanDeployParams) = abi.decode(
             initializationShamanParams,
             (address, uint256, bytes[])
@@ -126,7 +128,7 @@ contract OnboarderShamanSummoner is HOSBase {
     ) internal override {
         // init shaman here
         // shaman setup with dao address, vault address and initShamanParams
-        for (uint256 i = 1; i < shamans.length; i++) {
+        for (uint256 i = 0; i < shamans.length; i++) {
             setUpShaman(shamans[i], baal, vault, initializationShamanParams, i);
         }
 
