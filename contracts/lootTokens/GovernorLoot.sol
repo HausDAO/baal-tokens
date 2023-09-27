@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 
 import "@daohaus/baal-contracts/contracts/interfaces/IBaal.sol";
 
-contract Loot is
+contract GovernorLoot is
     ERC20SnapshotUpgradeable,
     ERC20PermitUpgradeable,
     PausableUpgradeable,
