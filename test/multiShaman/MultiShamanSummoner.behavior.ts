@@ -50,30 +50,28 @@ export function shouldSummonASuperBaal(): void {
 
 export function shouldHaveCommunityVetoPower(): void {
   it.only("Should not be able to pause loot through proposal", async function () {
-    // get shares
+    //todo: break this up into multiple tests
+    // get some addresss
     const [s1, s2] = await ethers.getSigners();
     console.log("s1", s1.address);
     console.log("s2", s2.address);
+
+    // connect s1 to onboarder shaman
     const shamanAsS1 = (await ethers.getContractAt(
       "SimpleEthOnboarderShaman",
       this.shaman.address,
       s1.address,
     )) as SimpleEthOnboarderShaman;
 
-    const baal1 = await this.shaman.baal();
-    const expiry = await this.shaman.expiry();
+    // onboard s1, sending eth returns shares
+    await shamanAsS1.onboarder({ value: ethers.utils.parseEther("1") });
+    // const totalSharesBalance = await this.shares.totalSupply();
+    // console.log("totalSharesBalance", totalSharesBalance.toString());
+    // const sharesBalance = await this.shares.balanceOf(s1.address);
+    // console.log("sharesBalance s1", sharesBalance.toString());
+    // expect shares to equal eth times multiply
 
-    const baal2 = await this.vetoShaman.baal();
-    console.log("baal1", baal1);
-    console.log("expiry", expiry);
-    console.log("baal2", baal2);
-
-    const onboard = await shamanAsS1.onboarder({ value: ethers.utils.parseEther("1") });
-    const totalSharesBalance = await this.shares.totalSupply();
-    console.log("totalSharesBalance", totalSharesBalance.toString());
-    const sharesBalance = await this.shares.balanceOf(s1.address);
-    console.log("sharesBalance s1", sharesBalance.toString());
-
+    // connect s2 to baal and community veto shaman
     const baalAsS1 = (await ethers.getContractAt("Baal", this.baal.address, s1.address)) as Baal;
     const shamanAsS2 = (await ethers.getContractAt(
       "CommunityVetoShaman",
@@ -81,6 +79,7 @@ export function shouldHaveCommunityVetoPower(): void {
       s2.address,
     )) as CommunityVetoShaman;
 
+    // mint loot to s2 with proposal from s1
     const mintLoot = await this.baal.interface.encodeFunctionData("mintLoot", [
       [s2.address],
       [ethers.utils.parseEther("69")],
@@ -107,10 +106,11 @@ export function shouldHaveCommunityVetoPower(): void {
       extraSeconds: 3, // # extra blocks to wait before processing the proposal
     });
 
-    const lootBalance = await this.loot.balanceOf(s2.address);
-    console.log("lootBalance s2", lootBalance.toString());
+    // const lootBalance = await this.loot.balanceOf(s2.address);
+    // console.log("lootBalance s2", lootBalance.toString());
+    // expect loot to equal 69 for s2
 
-    //
+    // set up proposal to be vetod
     const mintShares = await this.baal.interface.encodeFunctionData("mintShares", [
       [this.users.summoner.address],
       [ethers.utils.parseEther("69")],
@@ -122,16 +122,16 @@ export function shouldHaveCommunityVetoPower(): void {
       [BigNumber.from(0)],
       [0],
     );
-    const sp = await baalAsS1.submitProposal(encodedAction, 0, 0, ""); // deployer is the only account with shares
+    await baalAsS1.submitProposal(encodedAction, 0, 0, ""); // deployer is the only account with shares
     const id = await this.baal.proposalCount();
-    const sv = await baalAsS1.submitVote(id, true);
+    await baalAsS1.submitVote(id, true);
 
+    // s2 stakes against proposal, should hit small initial threshold
     await shamanAsS2.initAndStakeVeto(id, "neg");
-    const cp = await (this.vetoShaman as CommunityVetoShaman).cancelProposal(id);
+    // anyone can now cancel proposal
+    await (this.vetoShaman as CommunityVetoShaman).cancelProposal(id);
     const ps = await (this.baal as Baal).getProposalStatus(id);
-
-    console.log("ps", ps);
-
+    // expect proposal to be cancelled
     expect(ps).to.eql([true, false, false, false]);
   });
 }
